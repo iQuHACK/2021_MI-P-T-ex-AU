@@ -42,12 +42,14 @@ def cell_clicked_lmb(event):
     cellx = math.floor(event.y // CELL_SIZE)
     celly = math.floor(event.x // CELL_SIZE)
     color_cell(cellx, celly, 'red')
+    cell_clicked(cellx, celly, 0)
 
 
 def cell_clicked_rmb(event):
     cellx = math.floor(event.y // CELL_SIZE)
     celly = math.floor(event.x // CELL_SIZE)
     color_cell(cellx, celly, 'lawn green')
+    cell_clicked(cellx, celly, 1)
 
 
 # creating main tkinter window/toplevel
