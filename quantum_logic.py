@@ -11,9 +11,10 @@ class Battleship:
 
 
 class QuantumGame:
-    def __init__(self, ships: List[Battleship], default_shoots_number: int = 5):
+    def __init__(self, ships: List[Battleship], default_shoots_number: int = 5, field_size: int = 10):
         self.ships = ships
         self.default_shoots_number = default_shoots_number
+        self.field_size = field_size
 
     def shoot_cells(self, coordinates: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
         pass
