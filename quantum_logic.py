@@ -11,7 +11,7 @@ class Battleship:
 
 
 class QuantumGame:
-    def __init__(self, ships: List[Battleship], default_shoots_number: int):
+    def __init__(self, ships: List[Battleship], default_shoots_number: int = 5):
         self.ships = ships
         self.default_shoots_number = default_shoots_number
 
