@@ -38,6 +38,7 @@ def color_cell(x, y, color):
 
 def change_qubits_left(cnt):
     qubits_left.config(text='Qubits left: ' + str(cnt))
+    qubits_left.update()
 
 
 def cell_clicked(x, y, o):

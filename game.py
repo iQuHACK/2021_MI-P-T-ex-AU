@@ -48,7 +48,7 @@ class GameField:
                 raise UserWarning('You cannot place a ship with this orientation here')
 
             sz = len(self.current_ship)
-            if sz > 1 and (sz & (sz - 1)) == 0:
+            if sz >= 1 and (sz & (sz - 1)) == 0:
                 if self.qbits_remaining == 0:
                     raise UserWarning('You have no qubits left')
                 self.qbits_remaining -= 1
