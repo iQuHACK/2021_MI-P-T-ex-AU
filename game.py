@@ -2,7 +2,7 @@ from quantum_logic import Battleship
 
 
 class GameField:
-    def __init__(self, field_size=12, qbits=11, total_ships=10, ):
+    def __init__(self, draw_next_ship, color_cell, field_size=12, qbits=11, total_ships=10):
         self.field_size = field_size
         self.ships = []
         self.current_size = None
@@ -11,8 +11,10 @@ class GameField:
         self.qbits_remaining = qbits
         self.ships_total = total_ships
         self.draw_in_progress = False
+        self.draw_next_ship = draw_next_ship
+        self.color_cell = color_cell
 
-    def draw_next_ship(self, size):
+    def next_ship_clicked(self):
         self.draw_in_progress = True
         if self.current_ship is not None or self.current_size is not None:
             if len(self.current_ship) == 0:

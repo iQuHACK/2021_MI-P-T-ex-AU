@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter.ttk import *
 import math
+import game
 
 FIELD_SIZE = 1000
 N = 10
@@ -27,36 +28,32 @@ def draw_next_ship(size):
 
 def color_cell(x, y, color):
     FH = FIELD_HIGHLIGHT
-    field.create_rectangle(FH + y * CELL_SIZE, FH + x * CELL_SIZE, FH + (y + 1) * CELL_SIZE, FH + (x + 1) * CELL_SIZE, fill=color)
+    field.create_rectangle(FH + y * CELL_SIZE, FH + x * CELL_SIZE, FH + (y + 1) * CELL_SIZE, FH + (x + 1) * CELL_SIZE,
+                           fill=color)
 
 
-def cell_clicked(x, y, orientation):
-    pass
-
-
-def next_ship_clicked():
-    pass
-
+game = game.GameField(draw_next_ship, color_cell)
 
 def cell_clicked_lmb(event):
     cellx = math.floor(event.y // CELL_SIZE)
     celly = math.floor(event.x // CELL_SIZE)
     color_cell(cellx, celly, 'red')
-    cell_clicked(cellx, celly, 0)
+    game.cell_clicked(cellx, celly, 0)
 
 
 def cell_clicked_rmb(event):
     cellx = math.floor(event.y // CELL_SIZE)
     celly = math.floor(event.x // CELL_SIZE)
     color_cell(cellx, celly, 'lawn green')
-    cell_clicked(cellx, celly, 1)
+    game.cell_clicked(cellx, celly, 1)
 
 
 # creating main tkinter window/toplevel
 master = Tk()
 master.title('QBattleship')
 
-field = Canvas(master, width=FIELD_SIZE, height=FIELD_SIZE, highlightthickness=FIELD_HIGHLIGHT, highlightbackground='black')
+field = Canvas(master, width=FIELD_SIZE, height=FIELD_SIZE, highlightthickness=FIELD_HIGHLIGHT,
+               highlightbackground='black')
 field.bind('<Button-1>', cell_clicked_lmb)
 field.bind('<Button-3>', cell_clicked_rmb)
 for i in range(9):
@@ -67,9 +64,12 @@ for i in range(9):
 CURRENT_SHIP_SIZE = 300
 current_ship = Canvas(master, width=CURRENT_SHIP_SIZE, height=CURRENT_SHIP_SIZE,
                       highlightthickness=2, highlightbackground='black')
+qubits_left = Label(master, text='Qubits left: 11')
+next_ship = Button(master, text='Next ship', command=game.next_ship_clicked)
 field.pack(side=LEFT, padx=3, pady=3)
-current_ship.pack(side=RIGHT, expand=False, anchor='n', padx=3, pady=3)
-draw_next_ship(3)
-draw_next_ship(2)
+current_ship.pack(expand=False, anchor='n', padx=3, pady=3)
+qubits_left.pack(anchor='n')
+next_ship.pack(anchor='n')
+draw_next_ship(4)
 
 mainloop()
