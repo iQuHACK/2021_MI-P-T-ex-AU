@@ -11,8 +11,12 @@ class Battleship:
 
 
 class QuantumGame:
-    def __init__(self, ships: List[Battleship]):
+    def __init__(self, ships: List[Battleship], default_shoots_number: int):
         self.ships = ships
+        self.default_shoots_number = default_shoots_number
 
     def shoot_cells(self, coordinates: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
         pass
+
+    def get_shoots_number(self):
+        return self.default_shoots_number
