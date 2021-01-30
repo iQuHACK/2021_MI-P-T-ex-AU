@@ -5,7 +5,7 @@ from quantum_logic import Battleship, QuantumGame
 
 class GameField:
     def __init__(self, draw_next_ship, color_cell, field_size=12, qbits=11, max_qbits_per_ship=3,
-                 ship_sizes=(4, 3, 3, 2, 2, 2, 1, 1, 1, 1)):
+                 ship_sizes=(4, 3, 3, 2, 2, 2, 1, 1, 1, 1), nshoots_default=5):
         self.field_size = field_size
         self.ships = []
         self.nship_current = None
@@ -18,6 +18,7 @@ class GameField:
         self.draw_next_ship = draw_next_ship
         self.color_cell = color_cell
         self.qgame = None
+        self.nshoots_default = nshoots_default
 
     def next_ship_clicked(self):
         self.draw_in_progress = True
@@ -44,4 +45,4 @@ class GameField:
                 return "No qbits left"
         else:
             if self.qgame is None:
-                self.qgame = QuantumGame(self.ships)
+                self.qgame = QuantumGame(self.ships, self.nshoots_default)
