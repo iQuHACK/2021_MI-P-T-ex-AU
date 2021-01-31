@@ -8,7 +8,8 @@ DEFSHOOTS = 5
 
 def main():
     test_simple_case()
-    # test_big_field()
+    test_big_field()
+    test_by_sergey()
     # print('Everything is OK!')
 
 
@@ -50,7 +51,21 @@ def test_big_field():
         Battleship(shape=2, coordinates=[(2, 8, VERT), (4, 6, VERT)]),
         Battleship(shape=2, coordinates=[(1, 5, VERT), (8, 6, HORIZ)]),
     ]
+    shots = [(1, 1), (6, 8), (3, 3), (8, 1), (8, 7)]
     qgame = QuantumGame(ships=ships, field_size=10, default_shoots_number=DEFSHOOTS)
+    result = qgame.shoot_cells(shots)
+    print(result)
+
+
+def test_by_sergey():
+    ships = [
+        Battleship(shape=1, coordinates=[(1, 1, HORIZ), (5, 4, HORIZ)]),
+        Battleship(shape=1, coordinates=[(3, 1, HORIZ)])
+    ]
+    shots = [(5, 4), (3, 1), (8, 8)]
+    qgame = QuantumGame(ships=ships, field_size=10, default_shoots_number=3)
+    result = qgame.shoot_cells(shots)
+    print(result)
 
 
 if __name__ == '__main__':
