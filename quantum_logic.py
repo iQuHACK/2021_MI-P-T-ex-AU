@@ -26,9 +26,9 @@ class QuantumCircuits:
         pos = 0
         for ship in qset.ship_ids:
             self.ships_nq[ship] = ships[ship].nqubits
-            self.ships_n_re = len(ships[ship].coordinates)
+            self.ships_n_re[ship] = len(ships[ship].coordinates)
             self.ship_start_pos[ship] = pos
-            pos += ships_nq[ship]
+            pos += self.ships_nq[ship]
             
 
         for ship in qset.ship_ids:
@@ -45,28 +45,47 @@ class QuantumCircuits:
                     self.possible_psi.remove(el)
                                  
         for intersection in qset.intersection_ids:
-            print(intersection)
-            if self.ship_start_pos[intersection[0][0]] < self.ship_start_pos[intersection[1][0]]:
-                id_0, q_id_0 = intersection[0]
-                id_1, q_id_1 = intersection[1]
-            else:
-                id_1, q_id_1 = intersection[0]
-                id_0, q_id_0 = intersection[1]
-            pattern = re.compile(
-                "[0,1]{%i}" % self.ship_start_pos[id_0] + 
-                self.my_bin(q_id_0, self.ships_nq[id_0]) + 
-                "[0,1]{%i}"%(self.ship_start_pos[id_1] - self.ships_nq[id_0] - self.ship_start_pos[id_0] ) +
-                self.my_bin(q_id_1, self.ships_nq[id_1]) + 
-                "[0,1]{%i}"%(qset.nqubits - self.ship_start_pos[id_1] - self.ships_nq[id_1] ))
-           
-        rm_elements = []
-        for psi in self.possible_psi:
-            if re.match(pattern, psi):
-                rm_elements.append(psi)
+            #print(intersection)
+            if self.ships_nq[intersection[0][0]] * self.ships_nq[intersection[1][0]] != 0:
+                if self.ship_start_pos[intersection[0][0]] < self.ship_start_pos[intersection[1][0]]:
+                    id_0, q_id_0 = intersection[0]
+                    id_1, q_id_1 = intersection[1]
+                else:
+                    id_1, q_id_1 = intersection[0]
+                    id_0, q_id_0 = intersection[1]
+                pattern = re.compile(
+                    "[0,1]{%i}" % self.ship_start_pos[id_0] + 
+                    self.my_bin(q_id_0, self.ships_nq[id_0]) + 
+                    "[0,1]{%i}"%(self.ship_start_pos[id_1] - self.ships_nq[id_0] - self.ship_start_pos[id_0] ) +
+                    self.my_bin(q_id_1, self.ships_nq[id_1]) + 
+                    "[0,1]{%i}"%(qset.nqubits - self.ship_start_pos[id_1] - self.ships_nq[id_1] ))
+                rm_elements = []
+                #print(pattern)
+                for psi in self.possible_psi:
+                    if re.match(pattern, psi):
+                        rm_elements.append(psi)
 
-        for el in rm_elements:
-            self.possible_psi.remove(el)
-    
+                for el in rm_elements:
+                    self.possible_psi.remove(el)
+            elif self.ships_nq[intersection[0][0]] == 0 or self.ships_nq[intersection[1][0]] == 0:
+                if self.ships_nq[intersection[0][0]] != 0:
+                    id_0, q_id_0 = intersection[0]
+                else:
+                    id_0, q_id_0 = intersection[1]
+                pattern = re.compile(
+                    "[0,1]{%i}" % self.ship_start_pos[id_0] + 
+                    self.my_bin(q_id_0, self.ships_nq[id_0]) + 
+                    "[0,1]{%i}"%(qset.nqubits - self.ship_start_pos[id_0] - self.ships_nq[id_0] ) )
+                #print(pattern)
+                rm_elements = []
+                for psi in self.possible_psi:
+                    if re.match(pattern, psi):
+                        rm_elements.append(psi)
+                for el in rm_elements:
+                    self.possible_psi.remove(el)
+            else:
+                print("AAAAAAAAAAAAAAAAAAAAAA")
+
     def change_sign(self, var: str):
         for i, v_i in enumerate(var[::-1]):
             if v_i == "0":
@@ -114,7 +133,7 @@ class QuantumCircuits:
     def ship_measure(self, ship_id):
         sum_res = 0
         val = self.measured[self.ship_start_pos[ship_id] : self.ship_start_pos[ship_id] + self.ships_nq[ship_id]]
-        for i, v in enumerate(va[::-1]):
+        for i, v in enumerate(val[::-1]):
             sum_res += 2**i * int(v)
         return sum_res
 
@@ -158,8 +177,8 @@ class QuantumGame:
                     x_ship = variants[0]
                     y_ship = variants[1]
                     d_ship = variants[2]
-                    if x_ship <= one_shoot_coordinate[0] < x_ship + (1 - d_ship) * ship.shape and \
-                       y_ship <= one_shoot_coordinate[1] < y_ship + d_ship * ship.shape:
+                    if x_ship <= one_shoot_coordinate[0] < x_ship + (d_ship) * ship.shape and \
+                       y_ship <= one_shoot_coordinate[1] < y_ship + (1 - d_ship) * ship.shape:
                         self.qsets[ship.q_set].current_shoots.append(shoot_num)
                         return 
         return
@@ -184,11 +203,14 @@ class QuantumGame:
                         x_ship, y_ship, d_ship = ship.coordinates[qc.ship_measure(ship_id)]
                         if x_ship <= x_shoot < x_ship + (1 - d_ship) * ship.shape and \
                            y_ship <= y_shoot < y_ship + d_ship * ship.shape:
-                               #probably some of us want to know which part of the ship was shot
-                               ship.flag = 1
-                               #check is ship dead
-                               shoots_res[-1][2] = ship_id
-                               shoots_res[-1][3] = ship.flag
+                                self.ships[ship_id].damage[y_shoot - y_ship + x_shoot - x_ship] = 0
+                                #probably some of us want to know which part of the ship was shot
+                                ship.flag = 1
+                                if sum(self.ships[ship_id].damage) == 0:
+                                    ship.flag = 0
+                                #check is ship dead
+                                shoots_res[-1][2] = ship_id
+                                shoots_res[-1][3] = ship.flag
 
                 for ship in self.ships:
                     if ship.flag != 2:
@@ -197,7 +219,7 @@ class QuantumGame:
                 
                 one_set.current_shoots = []
 
-        return lucky_shoots
+        return shoots_res
 
     def get_shoots_number(self):
         return self.default_shoots_number
