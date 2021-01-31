@@ -2,7 +2,8 @@ from quantum_logic import Battleship, QuantumGame
 
 
 class GameField:
-    def __init__(self, draw_next_ship, color_cell, change_qubits_left, field_size=10, qbits=11):
+    def __init__(self, draw_next_ship, color_cell, change_qubits_left, color_cell_guessing, init_guessing,
+                 field_size=10, qbits=11):
         self.field_size = field_size
         self.ships = []
         self.current_ship = []
@@ -12,6 +13,8 @@ class GameField:
         self.draw_next_ship = draw_next_ship
         self.color_cell = color_cell
         self.change_qubits_left = change_qubits_left
+        self.color_cell_guessing = color_cell_guessing
+        self.init_guessing = init_guessing
         self.qgame = None
         self.ship_num = 0
         self.max_qbits_per_ship = 3
@@ -36,33 +39,38 @@ class GameField:
         self.call_draw_next_ship()
         if self.ship_num == len(self.ship_sizes):
             self.draw_in_progress = False
+            self.init_guessing()
+
+    def cell_clicked_guessing(self, x, y):
+        if self.qgame is None:
+            self.qgame = QuantumGame(self.ships)
+        print(x, y)
 
     # 0 - vertical, 1 - horizontal
     def cell_clicked(self, x, y, orientation):
-        if self.draw_in_progress:
-            if len(self.current_ship) == 8:
-                raise UserWarning('You can only use three cubits for a ship')
-            ship_sz = self.ship_sizes[self.ship_num]
-            if orientation == 0 and x + ship_sz > self.field_size or \
-                    orientation == 1 and y + ship_sz > self.field_size:
-                raise UserWarning('You cannot place a ship with this orientation here')
+        if not self.draw_in_progress:
+            self.cell_clicked_guessing(x, y)
+            return
+        if len(self.current_ship) == 8:
+            raise UserWarning('You can only use three cubits for a ship')
+        ship_sz = self.ship_sizes[self.ship_num]
+        if orientation == 0 and x + ship_sz > self.field_size or \
+                orientation == 1 and y + ship_sz > self.field_size:
+            raise UserWarning('You cannot place a ship with this orientation here')
 
-            sz = len(self.current_ship)
-            if sz >= 1 and (sz & (sz - 1)) == 0:
-                if self.qbits_remaining == 0:
-                    raise UserWarning('You have no qubits left')
-                self.qbits_remaining -= 1
-                self.change_qubits_left(self.qbits_remaining)
+        sz = len(self.current_ship)
+        if sz >= 1 and (sz & (sz - 1)) == 0:
+            if self.qbits_remaining == 0:
+                raise UserWarning('You have no qubits left')
+            self.qbits_remaining -= 1
+            self.change_qubits_left(self.qbits_remaining)
 
-            xx, yy = x, y
-            for i in range(ship_sz):
-                self.color_cell(xx, yy, self.ship_colors[self.ship_num])
-                if orientation == 0:
-                    xx += 1
-                else:
-                    yy += 1
+        xx, yy = x, y
+        for i in range(ship_sz):
+            self.color_cell(xx, yy, self.ship_colors[self.ship_num])
+            if orientation == 0:
+                xx += 1
+            else:
+                yy += 1
 
-            self.current_ship.append((x, y, orientation))
-        else:
-            if self.qgame is None:
-                self.qgame = QuantumGame(self.ships)
+        self.current_ship.append((x, y, orientation))

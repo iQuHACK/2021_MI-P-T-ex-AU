@@ -36,6 +36,13 @@ def color_cell(x, y, color):
                            fill=color)
 
 
+def color_cell_guessing(x, y, color):
+    FH = FIELD_HIGHLIGHT
+    guessing_field.create_rectangle(FH + y * CELL_SIZE, FH + x * CELL_SIZE, FH + (y + 1) * CELL_SIZE,
+                                    FH + (x + 1) * CELL_SIZE,
+                                    fill=color)
+
+
 def change_qubits_left(cnt):
     qubits_left.config(text='Qubits left: ' + str(cnt))
     qubits_left.update()
@@ -70,6 +77,7 @@ def next_ship_clicked(event=None):
 # creating main tkinter window/toplevel
 master = Tk()
 master.title('QBattleship')
+master.resizable(False, False)
 
 field = Canvas(master, width=FIELD_SIZE, height=FIELD_SIZE, highlightthickness=FIELD_HIGHLIGHT,
                highlightbackground='black')
@@ -87,11 +95,28 @@ current_ship = Canvas(master, width=CURRENT_SHIP_SIZE, height=CURRENT_SHIP_SIZE,
 
 qubits_left = Label(master, text='Qubits left: 11')
 next_ship = Button(master, text='Next ship', command=next_ship_clicked)
-field.pack(side=LEFT, padx=3, pady=3)
+field.pack(side=LEFT)
 current_ship.pack(expand=False, anchor='n', padx=3, pady=3)
 qubits_left.pack(anchor='n')
 next_ship.pack(anchor='n')
 
-game = game.GameField(draw_next_ship, color_cell, change_qubits_left)
+def init_guessing():
+    master.withdraw()
+    global guessing_field
+    master_guessing = Tk()
+    master_guessing.title('QBattleship guessing')
+    master_guessing.resizable(False, False)
+    guessing_field = Canvas(master_guessing, width=FIELD_SIZE, height=FIELD_SIZE, highlightthickness=FIELD_HIGHLIGHT,
+                            highlightbackground='black')
+    guessing_field.bind('<Button-1>', cell_clicked_lmb)
+    guessing_field.bind('<Button-3>', cell_clicked_rmb)
+    for i in range(9):
+        FH = FIELD_HIGHLIGHT
+        guessing_field.create_line(FH + CELL_SIZE * (i + 1), FH + 0, FH + CELL_SIZE * (i + 1), FH + FIELD_SIZE + 2)
+        guessing_field.create_line(FH + 0, FH + CELL_SIZE * (i + 1), FH + FIELD_SIZE, FH + CELL_SIZE * (i + 1))
+    guessing_field.pack(side=LEFT)
+
+
+game = game.GameField(draw_next_ship, color_cell, change_qubits_left, color_cell_guessing, init_guessing)
 
 mainloop()
