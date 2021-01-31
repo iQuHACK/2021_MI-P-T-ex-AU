@@ -1,5 +1,5 @@
 import numpy as np
-# import qiskit
+import qiskit
 from typing import List, Tuple
 
 from util import draw_ids_on_ships
@@ -111,8 +111,8 @@ class QuantumGame:
                 x, y, hv = shipcoords
                 fromx = x - 1 if x != 0 else 0
                 fromy = y - 1 if y != 0 else 0
-                tox = x + 2 if hv == 1 else x + 1 + qship.shape
-                toy = y + 2 if hv == 0 else y + 1 + qship.shape
+                tox = x + 2 if hv == 0 else x + 1 + qship.shape
+                toy = y + 2 if hv == 1 else y + 1 + qship.shape
 
                 for x_ in range(fromx, tox):
                     for y_ in range(fromy, toy):
@@ -123,14 +123,11 @@ class QuantumGame:
                             qubitsets.pop(fvalue)
                             field = draw_ids_on_ships(field, [self.ships[k] for k in qset.ship_ids], nset_current)
                             nset_current += 1
-                            # print(field)
-                            # print(qubitsets)
 
             if new_set_idx == nset_current:
                 qset = QubitSet(idx=nset_current, ship_ids=[i])
                 qubitsets[nset_current] = qset
                 field = draw_ids_on_ships(field, [self.ships[i]], nset_current)
-                print(field)
                 nset_current += 1
             # print(field)
 
@@ -157,16 +154,9 @@ class QuantumGame:
             for j, (x2, y2, hv2) in enumerate(qship2.coordinates):
                 fromx = x1 - 1 if x1 != 0 else 0
                 fromy = y1 - 1 if y1 != 0 else 0
-                tox = x1 + 2 if hv1 == 1 else x1 + 1 + qship1.shape
-                toy = y1 + 2 if hv1 == 0 else y1 + 1 + qship1.shape
-                x2end, y2end = x2 + (1 - hv2) * (qship2.shape - 1), y2 + hv2 * (qship2.shape - 1)
-                # print(i, j)
-                # print(fromx, x2, tox)
-                # print(fromy, y2, toy)
-                # print(fromx, x2end, tox)
-                # print(fromy, y2end, toy)
-                # print()
+                tox = x1 + 2 if hv1 == 0 else x1 + 1 + qship1.shape
+                toy = y1 + 2 if hv1 == 1 else y1 + 1 + qship1.shape
+                x2end, y2end = x2 + hv2 * (qship2.shape - 1), y2 + (1 - hv2) * (qship2.shape - 1)
                 if (fromx <= x2 < tox and fromy <= y2 < toy) or (fromx <= x2end < tox and fromy <= y2end < toy):
                     result.append(((idx1, i), (idx2, j)))
-        print(idx1, idx2, result)
         return result
