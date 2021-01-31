@@ -194,7 +194,7 @@ class QuantumGame:
         self.qsets = self.qubit_sets_from_ships()
         #for qset in self.qsets:
         #    print(qset.ship_ids)
-        shoots_res = []
+        shoots_res: List[List[int]] = []
         for shoot_num, one_shoot_coordinate in enumerate(coordinates):
             self.check_one_shoot(shoot_num, one_shoot_coordinate)
         for one_set in self.qsets:
@@ -227,7 +227,8 @@ class QuantumGame:
                         ship.coordinates = [(x_ship, y_ship, d_ship)]
 
                 one_set.current_shoots = []
-        print("shoots result:", shoots_res)
+        shoots_res = [tuple(res) for res in shoots_res]
+        print(shoots_res)
         return shoots_res
 
     def get_shoots_number(self):
