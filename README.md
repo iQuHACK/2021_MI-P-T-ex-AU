@@ -1,17 +1,3 @@
-# Welcome to iQuHACK 2021!
-Check out some info in the [event's repository](https://github.com/iQuHACK/2021) to get started.
-
-Having a README in your team's repository facilitates judging. A good README contains:
-* a clear title for your project,
-* a short abstract,
-* the motivation/goals for your project,
-* a description of the work you did, and
-* proposals for future work.
-
-You can find a potential README template in [one of last year's projects](https://github.com/iQuHACK/QuhacMan).
-
-==============
-
 # Quantum Battleship
 
 ## Team: MI(P)T+ex-AU
@@ -36,8 +22,10 @@ The current version of the game allows setting a field and then making shots to 
 We propose the following strategy of using the current version: one sets the field and then gives it (hidden) to another one who tries to finish the game in a minimal number of shots/turns.
 
 ## Future Plans
-Multiplayer version is on its way
-There is still plenty room to play with amplitudes and complicated entanglement. showing self field to the player
+
+Multiplayer version is on its way.
+
+There is still plenty room to play with amplitudes and complicated entanglement.
 
 
 ## How to run the game:
