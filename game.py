@@ -17,6 +17,7 @@ class GameField:
         self.guesses = 0
         self.selected_cells = []
         self.cells_per_guess = 5
+
         self.ship_sizes = (4, 3, 2, 1, 1)
         self.ship_colors = ('#E43F6F', '#93E1D8', '#1C7C54', '#E9806E', '#EEFC57',
                             "#2660a4", "#c47335", "#eff0d1", "#77ba99", "#56351e")
