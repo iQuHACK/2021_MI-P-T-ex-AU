@@ -23,7 +23,8 @@ We propose the following strategy of using the current version: one sets the fie
 
 ## Future Plans
 Multiplayer version is on its way. 
-There is still plenty of room to play with amplitudes and complicated entanglement. 
+
+And there is still plenty of room to play with amplitudes and complicated entanglement, so the Pro version is possible. 
 
 
 
