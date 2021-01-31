@@ -84,7 +84,10 @@ class QuantumCircuits:
                 for el in rm_elements:
                     self.possible_psi.remove(el)
             else:
-                print("AAAAAAAAAAAAAAAAAAAAAA")
+                raise UserWarning("Two determenistic ship have an intersection")
+
+        if len(self.possible_psi == 0):
+            raise UserWarning("This state is imposible even in quantum world =(")
 
     def change_sign(self, var: str):
         for i, v_i in enumerate(var[::-1]):
