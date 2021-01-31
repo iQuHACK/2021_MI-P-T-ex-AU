@@ -10,6 +10,12 @@ Having a README in your team's repository facilitates judging. A good README con
 
 You can find a potential README template in [one of last year's projects](https://github.com/iQuHACK/QuhacMan).
 
-Feel free to contact the staff with questions over our [event's slack](https://iquhack.slack.com), or via iquhack@mit.edu.
+==============
 
-Good luck!
+How to run the game:
+
+`sudo apt-get install python3-tk` or `sudo dnf install python3-tkinter`  
+`pipenv install -r 'requirements.txt'`  
+`python3 ./main.py`
+
+
