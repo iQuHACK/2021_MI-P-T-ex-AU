@@ -134,11 +134,14 @@ class QuantumCircuits:
         self.measured = list(self.count.keys())[0]
 
     def ship_measure(self, ship_id):
-        sum_res = 0
-        val = self.measured[self.ship_start_pos[ship_id]: self.ship_start_pos[ship_id] + self.ships_nq[ship_id]]
-        for i, v in enumerate(val[::-1]):
-            sum_res += 2 ** i * int(v)
-        return sum_res
+        if self.ships_nq[ship_id]  == 0:
+            return 0
+        else:
+            sum_res = 0
+            val = self.measured[self.ship_start_pos[ship_id]: self.ship_start_pos[ship_id] + self.ships_nq[ship_id]]
+            for i, v in enumerate(val[::-1]):
+                sum_res += 2 ** i * int(v)
+            return sum_res
 
 
 class Battleship:
