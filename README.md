@@ -31,8 +31,10 @@ And there is still plenty of room to play with amplitudes and complicated entang
 ## How to run the game:
 
 Follow the instructions below to launch the game.
+
 `sudo apt-get install python3-tk` or `sudo dnf install python3-tkinter`  
 `pipenv install -r 'requirements.txt'`  
+`!pip install qiskit_ionq_provider-0.0.1.dev0+45bd6b1-py3-none-any.whl --user`
 `python3 ./main.py`
 
 
