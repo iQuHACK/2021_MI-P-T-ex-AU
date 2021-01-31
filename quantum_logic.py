@@ -191,6 +191,8 @@ class QuantumGame:
     def shoot_cells(self, coordinates: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
         print(coordinates)
         self.qsets = self.qubit_sets_from_ships()
+        for qset in self.qsets:
+            print(qset.ship_ids)
         shoots_res = []
         for shoot_num, one_shoot_coordinate in enumerate(coordinates):
             self.check_one_shoot(shoot_num, one_shoot_coordinate)
@@ -201,10 +203,9 @@ class QuantumGame:
                 qc.create_qc()
                 qc.run_qc()
 
-                
                 for one_shoot_num in one_set.current_shoots:
                     x_shoot, y_shoot = coordinates[one_shoot_num]
-                    shoots_res.append(x_shoot, y_shoot, -1, 2)
+                    shoots_res.append((x_shoot, y_shoot, -1, 2))
                     for ship_id in one_set.ship_ids:
                         ship = self.ships[ship_id]
                         x_ship, y_ship, d_ship = ship.coordinates[qc.ship_measure(ship_id)]
@@ -219,7 +220,7 @@ class QuantumGame:
                                 shoots_res[-1][2] = ship_id
                                 shoots_res[-1][3] = ship.flag
 
-                for ship in self.ships:
+                for ship_id, ship in enumerate(self.ships):
                     if ship.flag != 2:
                         x_ship, y_ship, d_ship = ship.coordinates[qc.ship_measure(ship_id)]
                         ship.coordinates = [(x_ship, y_ship, d_ship)]  
@@ -234,7 +235,7 @@ class QuantumGame:
     def qubit_sets_from_ships(self) -> List[QubitSet]:
         qubitsets = {}
         nset_current = 0
-        field = -100 * np.ones(shape=(self.field_size+1, self.field_size+1)).astype(int)
+        field = -100 * np.ones(shape=(self.field_size+2, self.field_size+2)).astype(int)
         for i, qship in enumerate(self.ships):
             new_set_idx = nset_current
             for j, shipcoords in enumerate(qship.coordinates):
