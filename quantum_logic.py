@@ -1,5 +1,61 @@
 import numpy as np
+import qiskit
 from typing import List, Tuple
+
+class QuantumCircuits:
+    def __init__(self, qc_type = 'qasm_simulator'):
+        if qc_type == 'qasm_simulator':
+            self.backend = qiskit.BasicAer.get_backend('qasm_simulator')
+       #write other types of backends
+    
+    def create_psi(self, nqubits: int, intersection_ids: List[Tuple[Tuple[int, int], Tuple[int, int]]]):
+        #self.possible_psi <- List[str]
+        self.nqubits = nqubits
+        self.intersection_ids = intersection_ids
+        self.possible_psi = np.array(["010", "011", "101"])
+    
+    def change_sign(self, var: str):
+        for i, v_i in enumerate(var[::-1]):
+            if v_i == "0":
+                self.qc.x(self.q_reg[i])
+                   
+    def recursion_qubit(self, path: str, possible_psi: List[str]):
+        last = [i[-1] for i in possible_psi[:]]
+        if "1" in last and "0" in last:
+            if path == "":
+                self.qc.h(self.q_reg[0])
+            else:
+                self.change_sign(path)
+                self.qc.mct(self.q_reg[:len(path)], self.aux_reg[0])
+                self.qc.ch(self.aux_reg[0], self.q_reg[len(path)])
+                self.qc.mct(self.q_reg[:len(path)], self.aux_reg[0])
+                self.change_sign(path)
+        elif "1" in last:
+            if path == "":
+                self.qc.x(self.q_reg[0])
+            else:
+                self.change_sign(path)
+                self.qc.mct(self.q_reg[:len(path)], self.q_reg[len(path)])
+                self.change_sign(path) 
+                   
+        for val in np.unique(last):
+            if len(possible_psi[0]) > 1:
+                new_psi = [s[:-1] for s in possible_psi if s[-1]==val]
+                self.recursion_qubit(val + path, new_psi)
+                   
+    def create_qc(self):
+        self.q_reg = qiskit.QuantumRegister(self.nqubits)
+        self.aux_reg = qiskit.QuantumRegister(1, "aux")
+        self.c_reg = qiskit.ClassicalRegister(self.nqubits)
+        self.qc = qiskit.QuantumCircuit(self.q_reg, self.aux_reg, self.c_reg)
+                   
+        self.recursion_qubit("", self.possible_psi)
+        self.qc.measure(self.q_reg , self.c_reg)
+                   
+    def run_qc(self):
+        job = qiskit.execute(self.qc, self.backend, shots=10000) #, seed_simulator = 3
+        result = job.result()
+        self.count = result.get_counts()
 
 
 class Battleship:
