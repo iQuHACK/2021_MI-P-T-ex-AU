@@ -122,17 +122,17 @@ class GameField:
             xship, yship, hv = coords
             if hv == 0 and yship == y:
                 if x <= xship < x + ship.shape:
-                    for x_ in range(x, x + ship.shape):
-                        if len(result):
-                            print('Error: one-ship copies intersection')
-                        else:
+                    if len(result):
+                        print('Error: one-ship copies intersection')
+                    else:
+                        for x_ in range(x, x + ship.shape):
                             result.append((x_, yship))
             if hv == 1 and xship == x:
                 if y <= yship < y + ship.shape:
-                    for y_ in range(y, y + ship.shape):
-                        if len(result):
-                            print('Error: one-ship copies intersection')
-                        else:
+                    if len(result):
+                        print('Error: one-ship copies intersection')
+                    else:
+                        for y_ in range(y, y + ship.shape):
                             result.append((xship, y_))
         if len(result) == 0:
             print('Error: no such points in specified ship')
