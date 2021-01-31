@@ -196,7 +196,7 @@ class QuantumGame:
         self.qsets = self.qubit_sets_from_ships()
         #for qset in self.qsets:
         #    print(qset.ship_ids)
-        shoots_res = []
+        shoots_res: List[List[int]] = []
         for shoot_num, one_shoot_coordinate in enumerate(coordinates):
             self.check_one_shoot(shoot_num, one_shoot_coordinate)
         for one_set in self.qsets:
@@ -210,7 +210,7 @@ class QuantumGame:
 
                 for one_shoot_num in one_set.current_shoots:
                     x_shoot, y_shoot = coordinates[one_shoot_num]
-                    shoots_res.append((x_shoot, y_shoot, -1, 2))
+                    shoots_res.append([x_shoot, y_shoot, -1, 2])
                     for ship_id in one_set.ship_ids:
                         ship = self.ships[ship_id]
                         x_ship, y_ship, d_ship = ship.coordinates[qc.ship_measure(ship_id)]
@@ -218,20 +218,21 @@ class QuantumGame:
                                 y_ship <= y_shoot < y_ship + (1 - d_ship) * ship.shape:
                             self.ships[ship_id].damage[y_shoot - y_ship + x_shoot - x_ship] = 0
                             # probably some of us want to know which part of the ship was shot
-                            ship.flag = 1
+                            ship.health = 1
                             if sum(self.ships[ship_id].damage) == 0:
-                                ship.flag = 0
+                                ship.health = 0
                             # check is ship dead
                             shoots_res[-1][2] = ship_id
-                            shoots_res[-1][3] = ship.flag
+                            shoots_res[-1][3] = ship.health
 
                 for ship_id, ship in enumerate(self.ships):
-                    if ship.flag != 2:
+                    if ship.health != 2:
                         x_ship, y_ship, d_ship = ship.coordinates[qc.ship_measure(ship_id)]
                         ship.coordinates = [(x_ship, y_ship, d_ship)]
 
                 one_set.current_shoots = []
-        print("shoots result:", shoots_res)
+        shoots_res = [tuple(res) for res in shoots_res]
+        print(shoots_res)
         return shoots_res
 
     def get_shoots_number(self):
