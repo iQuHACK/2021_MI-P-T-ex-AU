@@ -180,11 +180,13 @@ class QuantumGame:
     def check_one_shoot(self, shoot_num: int, one_shoot_coordinate: Tuple[int, int]):
         for ship in self.ships:
             for variants in ship.coordinates:
+                print("check_one_shoot")
                 x_ship = variants[0]
                 y_ship = variants[1]
                 d_ship = variants[2]
-                if x_ship <= one_shoot_coordinate[0] < x_ship + d_ship * ship.shape and \
-                        y_ship <= one_shoot_coordinate[1] < y_ship + (1 - d_ship) * ship.shape:
+                if x_ship <= one_shoot_coordinate[0] <= x_ship + (1 - d_ship) * (ship.shape -1) and \
+                        y_ship <= one_shoot_coordinate[1] <= y_ship + d_ship * (ship.shape -1):
+                    print("append shoots")
                     self.qsets[ship.q_set].current_shoots.append(shoot_num)
                     return
         return
@@ -198,7 +200,9 @@ class QuantumGame:
         for shoot_num, one_shoot_coordinate in enumerate(coordinates):
             self.check_one_shoot(shoot_num, one_shoot_coordinate)
         for one_set in self.qsets:
+            print("for set in qsets")
             if len(one_set.current_shoots) != 0:
+                print("make a qc")
                 qc = QuantumCircuits()
                 qc.create_psi(self.ships, one_set)
                 qc.create_qc()
@@ -210,8 +214,8 @@ class QuantumGame:
                     for ship_id in one_set.ship_ids:
                         ship = self.ships[ship_id]
                         x_ship, y_ship, d_ship = ship.coordinates[qc.ship_measure(ship_id)]
-                        if x_ship <= x_shoot < x_ship + (1 - d_ship) * ship.shape and \
-                                y_ship <= y_shoot < y_ship + d_ship * ship.shape:
+                        if x_ship <= x_shoot < x_ship + d_ship * ship.shape and \
+                                y_ship <= y_shoot < y_ship + (1 - d_ship) * ship.shape:
                             self.ships[ship_id].damage[y_shoot - y_ship + x_shoot - x_ship] = 0
                             # probably some of us want to know which part of the ship was shot
                             ship.flag = 1
