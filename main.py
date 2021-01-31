@@ -1,4 +1,5 @@
 from tkinter import *
+from tkinter.messagebox import showerror
 from tkinter.ttk import *
 import math
 import game
@@ -10,20 +11,23 @@ FIELD_HIGHLIGHT = 2
 assert (FIELD_SIZE % N == 0)
 
 
-def draw_next_ship(size):
+def draw_next_ship(size: int, color: str, is_last: bool):
     current_ship.delete('all')
-    center = CURRENT_SHIP_SIZE // 2
-    CSZ = 50
-    le = center - CSZ // 2
-    ri = center + CSZ // 2
-    up = center - CSZ * size // 2
-    down = center + CSZ * size // 2
-    for i in range(up, down + 1, CSZ):
-        current_ship.create_line(le, i, ri, i)
-    for i in range(size):
-        current_ship.create_rectangle(le, up + i * CSZ, ri, up + (i + 1) * CSZ, fill='lawn green')
-    current_ship.create_line(le, up, le, down)
-    current_ship.create_line(ri, up, ri, down)
+    if size > 0:
+        center = CURRENT_SHIP_SIZE // 2
+        CSZ = 50
+        le = center - CSZ // 2
+        ri = center + CSZ // 2
+        up = center - CSZ * size // 2
+        down = center + CSZ * size // 2
+        for i in range(up, down + 1, CSZ):
+            current_ship.create_line(le, i, ri, i)
+        for i in range(size):
+            current_ship.create_rectangle(le, up + i * CSZ, ri, up + (i + 1) * CSZ, fill=color)
+        current_ship.create_line(le, up, le, down)
+        current_ship.create_line(ri, up, ri, down)
+    if is_last:
+        next_ship.config(text='Finish')
 
 
 def color_cell(x, y, color):
@@ -32,30 +36,54 @@ def color_cell(x, y, color):
                            fill=color)
 
 
-game = game.GameField(draw_next_ship, color_cell)
+def color_cell_guessing(x, y, color):
+    FH = FIELD_HIGHLIGHT
+    guessing_field.create_rectangle(FH + y * CELL_SIZE, FH + x * CELL_SIZE, FH + (y + 1) * CELL_SIZE,
+                                    FH + (x + 1) * CELL_SIZE,
+                                    fill=color)
+
+
+def change_qubits_left(cnt):
+    qubits_left.config(text='Qubits left: ' + str(cnt))
+    qubits_left.update()
+
+
+def cell_clicked(x, y, o):
+    try:
+        game.cell_clicked(x, y, o)
+    except UserWarning as e:
+        showerror(title='QBattleship', message=e.args[0])
+
 
 def cell_clicked_lmb(event):
     cellx = math.floor(event.y // CELL_SIZE)
     celly = math.floor(event.x // CELL_SIZE)
-    color_cell(cellx, celly, 'red')
-    game.cell_clicked(cellx, celly, 0)
+    cell_clicked(cellx, celly, 0)
 
 
 def cell_clicked_rmb(event):
     cellx = math.floor(event.y // CELL_SIZE)
     celly = math.floor(event.x // CELL_SIZE)
-    color_cell(cellx, celly, 'lawn green')
-    game.cell_clicked(cellx, celly, 1)
+    cell_clicked(cellx, celly, 1)
+
+
+def next_ship_clicked(event=None):
+    try:
+        game.next_ship_clicked()
+    except UserWarning as e:
+        showerror(title='QBattleship', message=e.args[0])
 
 
 # creating main tkinter window/toplevel
 master = Tk()
 master.title('QBattleship')
+master.resizable(False, False)
 
 field = Canvas(master, width=FIELD_SIZE, height=FIELD_SIZE, highlightthickness=FIELD_HIGHLIGHT,
                highlightbackground='black')
 field.bind('<Button-1>', cell_clicked_lmb)
 field.bind('<Button-3>', cell_clicked_rmb)
+master.bind('<space>', next_ship_clicked)
 for i in range(9):
     FH = FIELD_HIGHLIGHT
     field.create_line(FH + CELL_SIZE * (i + 1), FH + 0, FH + CELL_SIZE * (i + 1), FH + FIELD_SIZE + 2)
@@ -64,12 +92,31 @@ for i in range(9):
 CURRENT_SHIP_SIZE = 300
 current_ship = Canvas(master, width=CURRENT_SHIP_SIZE, height=CURRENT_SHIP_SIZE,
                       highlightthickness=2, highlightbackground='black')
+
 qubits_left = Label(master, text='Qubits left: 11')
-next_ship = Button(master, text='Next ship', command=game.next_ship_clicked)
-field.pack(side=LEFT, padx=3, pady=3)
+next_ship = Button(master, text='Next ship', command=next_ship_clicked)
+field.pack(side=LEFT)
 current_ship.pack(expand=False, anchor='n', padx=3, pady=3)
 qubits_left.pack(anchor='n')
 next_ship.pack(anchor='n')
-draw_next_ship(4)
+
+def init_guessing():
+    master.withdraw()
+    global guessing_field
+    master_guessing = Tk()
+    master_guessing.title('QBattleship guessing')
+    master_guessing.resizable(False, False)
+    guessing_field = Canvas(master_guessing, width=FIELD_SIZE, height=FIELD_SIZE, highlightthickness=FIELD_HIGHLIGHT,
+                            highlightbackground='black')
+    guessing_field.bind('<Button-1>', cell_clicked_lmb)
+    guessing_field.bind('<Button-3>', cell_clicked_rmb)
+    for i in range(9):
+        FH = FIELD_HIGHLIGHT
+        guessing_field.create_line(FH + CELL_SIZE * (i + 1), FH + 0, FH + CELL_SIZE * (i + 1), FH + FIELD_SIZE + 2)
+        guessing_field.create_line(FH + 0, FH + CELL_SIZE * (i + 1), FH + FIELD_SIZE, FH + CELL_SIZE * (i + 1))
+    guessing_field.pack(side=LEFT)
+
+
+game = game.GameField(draw_next_ship, color_cell, change_qubits_left, color_cell_guessing, init_guessing)
 
 mainloop()
