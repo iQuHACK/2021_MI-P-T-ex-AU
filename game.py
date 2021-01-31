@@ -17,7 +17,7 @@ class GameField:
         self.guesses = 0
         self.selected_cells = []
         self.cells_per_guess = 5
-        self.ship_sizes = (4, 3, 3, 2, 2, 2, 1, 1, 1, 1)
+        self.ship_sizes = (4, 3, 2, 1, 1)
         self.ship_colors = ('#E43F6F', '#93E1D8', '#1C7C54', '#E9806E', '#EEFC57',
                             "#2660a4", "#c47335", "#eff0d1", "#77ba99", "#56351e")
         self.miss_color = '#8fcefd'
@@ -61,6 +61,7 @@ class GameField:
 
     # 0 - vertical, 1 - horizontal
     def cell_clicked(self, x, y, orientation):
+        print(x, y)
         if not self.draw_in_progress:
             self.cell_clicked_guessing(x, y)
             return
@@ -94,6 +95,7 @@ class GameField:
         print('Guess submitted')
 
         response = self.qgame.shoot_cells(self.selected_cells)
+        print(response)
         for x, y, ship_id, health in response:
             if ship_id < 0:
                 self.controller.color_cell(x, y, self.miss_color)
