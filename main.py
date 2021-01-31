@@ -11,41 +11,58 @@ FIELD_HIGHLIGHT = 2
 assert (FIELD_SIZE % N == 0)
 
 
-def draw_next_ship(size: int, color: str, is_last: bool):
-    current_ship.delete('all')
-    if size > 0:
-        center = CURRENT_SHIP_SIZE // 2
-        CSZ = 50
-        le = center - CSZ // 2
-        ri = center + CSZ // 2
-        up = center - CSZ * size // 2
-        down = center + CSZ * size // 2
-        for i in range(up, down + 1, CSZ):
-            current_ship.create_line(le, i, ri, i)
-        for i in range(size):
-            current_ship.create_rectangle(le, up + i * CSZ, ri, up + (i + 1) * CSZ, fill=color)
-        current_ship.create_line(le, up, le, down)
-        current_ship.create_line(ri, up, ri, down)
-    if is_last:
-        next_ship.config(text='Finish')
+class Controller:
+    @staticmethod
+    def draw_next_ship(size: int, color: str, is_last: bool):
+        current_ship.delete('all')
+        if size > 0:
+            center = CURRENT_SHIP_SIZE // 2
+            CSZ = 50
+            le = center - CSZ // 2
+            ri = center + CSZ // 2
+            up = center - CSZ * size // 2
+            down = center + CSZ * size // 2
+            for i in range(up, down + 1, CSZ):
+                current_ship.create_line(le, i, ri, i)
+            for i in range(size):
+                current_ship.create_rectangle(le, up + i * CSZ, ri, up + (i + 1) * CSZ, fill=color)
+            current_ship.create_line(le, up, le, down)
+            current_ship.create_line(ri, up, ri, down)
+        if is_last:
+            next_ship.config(text='Finish')
 
+    @staticmethod
+    def color_cell(x, y, color):
+        FH = FIELD_HIGHLIGHT
+        field.create_rectangle(FH + y * CELL_SIZE, FH + x * CELL_SIZE, FH + (y + 1) * CELL_SIZE,
+                               FH + (x + 1) * CELL_SIZE,
+                               fill=color)
 
-def color_cell(x, y, color):
-    FH = FIELD_HIGHLIGHT
-    field.create_rectangle(FH + y * CELL_SIZE, FH + x * CELL_SIZE, FH + (y + 1) * CELL_SIZE, FH + (x + 1) * CELL_SIZE,
-                           fill=color)
+    @staticmethod
+    def color_cell_guessing(x, y, color):
+        FH = FIELD_HIGHLIGHT
+        guessing_field.create_rectangle(FH + y * CELL_SIZE, FH + x * CELL_SIZE, FH + (y + 1) * CELL_SIZE,
+                                        FH + (x + 1) * CELL_SIZE,
+                                        fill=color)
 
+    @staticmethod
+    def change_qubits_left(cnt):
+        qubits_left.config(text='Qubits left: ' + str(cnt))
+        qubits_left.update()
 
-def color_cell_guessing(x, y, color):
-    FH = FIELD_HIGHLIGHT
-    guessing_field.create_rectangle(FH + y * CELL_SIZE, FH + x * CELL_SIZE, FH + (y + 1) * CELL_SIZE,
-                                    FH + (x + 1) * CELL_SIZE,
-                                    fill=color)
+    @staticmethod
+    def change_guesses(cnt):
+        guesses.config(text='Guesses: ' + str(cnt))
+        guesses.update()
 
+    @staticmethod
+    def change_cells_left(cnt):
+        cells_left.config(text='Cells left this guess: ' + str(cnt))
+        cells_left.update()
 
-def change_qubits_left(cnt):
-    qubits_left.config(text='Qubits left: ' + str(cnt))
-    qubits_left.update()
+    @staticmethod
+    def init_guessing():
+        init_guessing_field()
 
 
 def cell_clicked(x, y, o):
@@ -100,9 +117,13 @@ current_ship.pack(expand=False, anchor='n', padx=3, pady=3)
 qubits_left.pack(anchor='n')
 next_ship.pack(anchor='n')
 
-def init_guessing():
+
+def init_guessing_field():
+    def submit_guess_clicked():
+        game.submit_guess()
+
     master.withdraw()
-    global guessing_field
+    global guessing_field, guesses, cells_left
     master_guessing = Tk()
     master_guessing.title('QBattleship guessing')
     master_guessing.resizable(False, False)
@@ -115,8 +136,14 @@ def init_guessing():
         guessing_field.create_line(FH + CELL_SIZE * (i + 1), FH + 0, FH + CELL_SIZE * (i + 1), FH + FIELD_SIZE + 2)
         guessing_field.create_line(FH + 0, FH + CELL_SIZE * (i + 1), FH + FIELD_SIZE, FH + CELL_SIZE * (i + 1))
     guessing_field.pack(side=LEFT)
+    cells_left = Label(master_guessing, text='Cells left this guess: 5')
+    cells_left.pack(anchor='ne')
+    submit_guess = Button(master_guessing, text='Submit guess', command=submit_guess_clicked)
+    submit_guess.pack(ancho='ne')
+    guesses = Label(master_guessing, text='Guesses: 0')
+    guesses.pack(anchor='ne')
 
 
-game = game.GameField(draw_next_ship, color_cell, change_qubits_left, color_cell_guessing, init_guessing)
+game = game.GameField(Controller)
 
 mainloop()
