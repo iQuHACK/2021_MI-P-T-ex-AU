@@ -6,6 +6,7 @@ class Battleship:
     def __init__(self, shape: int, coordinates: List[Tuple[int, int, int]]):
         self.shape = shape
         self.coordinates = coordinates
+        self.nqubits = None
         self.damage = np.ones(shape)
         self.q_set = None
 
@@ -19,8 +20,10 @@ class QubitSet:
 
 
 class QuantumGame:
-    def __init__(self, ships: List[Battleship], default_shoots_number: int = 5, field_size: int = 10):
+    def __init__(self, ships: List[Battleship], default_shoots_number: int, field_size: int):
         self.ships = ships
+        for i, ship in enumerate(ships):
+            self.ships[i].nqubits = int(np.ceil(np.log2(len(ship.coordinates))))
         self.default_shoots_number = default_shoots_number
         self.field_size = field_size
 
@@ -33,7 +36,7 @@ class QuantumGame:
     def qubit_sets_from_ships(self) -> List[QubitSet]:
         qubitsets = {}
         nset_current = 0
-        field = -np.ones(shape=(self.field_size+1, self.field_size+1))
+        field = -np.ones(shape=(self.field_size+1, self.field_size+1)).astype(int)
         for i, qship in enumerate(self.ships):
             new_set_idx = nset_current
             for shipcoords in qship.coordinates:
@@ -48,14 +51,19 @@ class QuantumGame:
                         if field[x_][y_] >= 0:
                             qset = QubitSet(idx=nset_current, ship_ids=qubitsets[field[x_][y_]].ship_ids + [i])
                             qubitsets[nset_current] = qset
-                            field = draw_ids_on_ships(field, [self.ships[j] for j in qset.ship_ids], new_set_idx)
-                            nset_current += 1
                             qubitsets.pop(field[x_][y_])
+                            field = draw_ids_on_ships(field, [self.ships[j] for j in qset.ship_ids], nset_current)
+                            nset_current += 1
+                            print(field)
+                            print(qubitsets)
 
             if new_set_idx == nset_current:
-                qset = QubitSet(idx=new_set_idx, ship_ids=[i])
-                qubitsets[new_set_idx] = qset
-                field = draw_ids_on_ships(field, [self.ships[i]], new_set_idx)
+                qset = QubitSet(idx=nset_current, ship_ids=[i])
+                qubitsets[nset_current] = qset
+                field = draw_ids_on_ships(field, [self.ships[i]], nset_current)
+                nset_current += 1
+                print(field)
+            print(qubitsets)
 
         qubitsets_list = []
         for v in qubitsets.values():
