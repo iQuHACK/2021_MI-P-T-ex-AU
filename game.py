@@ -117,18 +117,23 @@ class GameField:
 
     def _get_coords_to_color(self, x, y, ship_id):
         result = []
-        flag = False
-        for i, coords in enumerate(self.ships[ship_id].coordinates):
-            fromx, fromy, hv = coords
-            tox = fromx + 1 if hv == 0 else fromx + self.ships[ship_id].shape
-            toy = fromy + 1 if hv == 1 else fromy + self.ships[ship_id].shape
-            if fromx <= x < tox and fromy <= y < toy:
-                if flag:
-                    print('Error: one-ship copies intersection')
-                flag = True
-                for x_ in range(fromx, tox):
-                    for y_ in range(fromy, toy):
-                        result.append((x_, y_))
+        ship = self.ships[ship_id]
+        for i, coords in enumerate(ship.coordinates):
+            xship, yship, hv = coords
+            if hv == 0 and yship == y:
+                if x <= xship < x + ship.shape:
+                    if len(result):
+                        print('Error: one-ship copies intersection')
+                    else:
+                        for x_ in range(x, x + ship.shape):
+                            result.append((x_, yship))
+            if hv == 1 and xship == x:
+                if y <= yship < y + ship.shape:
+                    if len(result):
+                        print('Error: one-ship copies intersection')
+                    else:
+                        for y_ in range(y, y + ship.shape):
+                            result.append((xship, y_))
         if len(result) == 0:
             print('Error: no such points in specified ship')
         return result

@@ -26,6 +26,7 @@ Multiplayer version is on its way.
 There is still plenty of room to play with amplitudes and complicated entanglement. 
 
 
+
 ## How to run the game:
 
 Follow the instructions below to launch the game.
