@@ -9,7 +9,7 @@ This is a new version of a popular game Battleship allowing battleships to have 
 
 If a usual battlefield is too deterministic for you and you'd like to let the battleships to be slightly more vivid and unpredictable the solution is to choose the quantum version of the game! 
 
-Being based on an ion-based real quantum computer it allows one to try themself in finding the best strategy to place the ships and to make the shots. Try yourself, but be careful - if have shot and missed, we can't guaranteer that the ship wouldn't be there next time! =)
+Being based on an ion-based real quantum computer it allows one to try themself in finding the best strategy to place the ships and to make the shots. Try yourself, but be careful - if have shot and missed, we can't guaranteer that the ship wouldn't be there next time. =)
 
 Your fleet is now quantum and you can place several copies of each ship to the battlefield. Placing the ships remember that the states will entangle and the impossible states will not count. 
 For a more interesting gameplay we've also slightly changed the mechanics of shots: you have several shots now and are able to shoose their positions independently. Choose wisely and it will increase your chances to win fast!
