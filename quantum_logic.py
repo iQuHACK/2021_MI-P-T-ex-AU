@@ -137,12 +137,13 @@ class QuantumCircuits:
             sum_res += 2**i * int(v)
         return sum_res
 
+
 class Battleship:
     def __init__(self, shape: int, coordinates: List[Tuple[int, int, int]]):
         self.shape = shape
         self.coordinates = coordinates
         self.nqubits = None
-        self.damage = np.ones(shape)
+        self.damage = 2
         self.q_set = None
 
 
@@ -171,7 +172,7 @@ class QuantumGame:
         self.default_shoots_number = default_shoots_number
         self.field_size = field_size
 
-    def check_one_shoot(self, shoot_num: int, one_shoot_coordinate: Tuple[int, int]): 
+    def check_one_shoot(self, shoot_num: int, one_shoot_coordinate: Tuple[int, int, int, int]):
         for ship in self.ships:
                 for variants in ship.coordinates:
                     x_ship = variants[0]

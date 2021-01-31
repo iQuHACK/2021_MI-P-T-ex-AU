@@ -20,6 +20,9 @@ class GameField:
         self.ship_sizes = (4, 3, 3, 2, 2, 2, 1, 1, 1, 1)
         self.ship_colors = ('#E43F6F', '#93E1D8', '#1C7C54', '#E9806E', '#EEFC57',
                             "#2660a4", "#c47335", "#eff0d1", "#77ba99", "#56351e")
+        self.miss_color = '#8fcefd'
+        self.injured_color = '#ec3520'
+        self.killed_color = '#3a0a04'
         self.call_draw_next_ship()
 
     def call_draw_next_ship(self):
@@ -54,7 +57,7 @@ class GameField:
                 raise UserWarning("You don't have any cells left this guess")
             self.selected_cells.append((x, y))
             self.controller.color_cell_guessing(x, y, 'grey')
-        self.controller.change_cells_left(5 - len(self.selected_cells))
+        self.controller.change_cells_left(self.default_shoots_number - len(self.selected_cells))
 
     # 0 - vertical, 1 - horizontal
     def cell_clicked(self, x, y, orientation):
@@ -89,3 +92,23 @@ class GameField:
         self.guesses += 1
         self.controller.change_guesses(self.guesses)
         print('Guess submitted')
+
+        response = self.qgame.shoot_cells(self.selected_cells)
+        for x, y, ship_id, health in response:
+            if ship_id < 0:
+                self.controller.color_cell(x, y, self.miss_color)
+            elif health == 1:
+                self.ships[ship_id].damage = 1
+                self.controller.color_cell(x, y, self.injured_color)
+            else:
+                if health != 0:
+                    print(f'Ship ID > 0, health = {health}')
+                self.ships[ship_id].damage = 0
+                ship_coords_to_color = self._get_coords_to_color(x, y, ship_id)
+                for x_, y_ in ship_coords_to_color:
+                    self.controller.color_cell(x, y, self.killed_color)
+
+    def _get_coords_to_color(self, x, y, ship_id):
+        for coords in self.ships[ship_id]:
+            pass
+        return []
