@@ -146,7 +146,8 @@ class Battleship:
         self.shape = shape
         self.coordinates = coordinates
         self.nqubits = None
-        self.damage = 2
+        self.damage = np.ones(shape).astype(int)
+        self.health = 2
         self.q_set = None
 
 
@@ -176,7 +177,7 @@ class QuantumGame:
         self.default_shoots_number = default_shoots_number
         self.field_size = field_size
 
-    def check_one_shoot(self, shoot_num: int, one_shoot_coordinate: Tuple[int, int, int, int]):
+    def check_one_shoot(self, shoot_num: int, one_shoot_coordinate: Tuple[int, int]):
         for ship in self.ships:
             for variants in ship.coordinates:
                 x_ship = variants[0]

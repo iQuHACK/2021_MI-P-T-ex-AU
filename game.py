@@ -101,12 +101,12 @@ class GameField:
             if ship_id < 0:
                 self.controller.color_cell(x, y, self.miss_color)
             elif health == 1:
-                self.ships[ship_id].damage = 1
+                self.ships[ship_id].health = 1
                 self.controller.color_cell(x, y, self.injured_color)
             else:
                 if health != 0:
                     print(f'Error: Ship ID > 0, health = {health}')
-                self.ships[ship_id].damage = 0
+                self.ships[ship_id].health = 0
                 ship_coords_to_color = self._get_coords_to_color(x, y, ship_id)
                 for x_, y_ in ship_coords_to_color:
                     self.controller.color_cell(x, y, self.killed_color)
