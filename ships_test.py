@@ -16,10 +16,10 @@ for line in f:
     for i in range((len(params) - 1)// 3):
         coords.append((int(params[3*i+1]), int(params[3*i+2]), int(params[3*i+3])))
     ships.append(Battleship(int(params[0]), coords))
+    print(ships[-1].coordinates, ships[-1].shape)
 f.close()
 game = QuantumGame(ships, int(shoots), int(size))
 result = game.qubit_sets_from_ships()
 print(lines)
 for i in result:
-    print(i.ship_ids, end=', ')
-
+    print(i.ship_ids, i.intersection_ids)

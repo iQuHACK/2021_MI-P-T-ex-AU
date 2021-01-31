@@ -16,7 +16,7 @@ class QubitSet:
         self.idx = idx
         self.nqubits = 0
         self.ship_ids = ship_ids
-        self.intersection_ids = []
+        self.intersection_ids: List[Tuple[Tuple[int, int], Tuple[int, int]]] = []
 
 
 class QuantumGame:
@@ -39,7 +39,7 @@ class QuantumGame:
         field = -np.ones(shape=(self.field_size+1, self.field_size+1)).astype(int)
         for i, qship in enumerate(self.ships):
             new_set_idx = nset_current
-            for shipcoords in qship.coordinates:
+            for j, shipcoords in enumerate(qship.coordinates):
                 x, y, hv = shipcoords
                 fromx = x - 1 if x != 0 else 0
                 fromy = y - 1 if y != 0 else 0
@@ -48,30 +48,52 @@ class QuantumGame:
 
                 for x_ in range(fromx, tox):
                     for y_ in range(fromy, toy):
-                        if field[x_][y_] >= 0:
-                            qset = QubitSet(idx=nset_current, ship_ids=qubitsets[field[x_][y_]].ship_ids + [i])
+                        fvalue = field[x_][y_]
+                        if fvalue >= 0 and i not in qubitsets[fvalue].ship_ids:
+                            qset = QubitSet(idx=nset_current, ship_ids=qubitsets[fvalue].ship_ids + [i])
                             qubitsets[nset_current] = qset
-                            qubitsets.pop(field[x_][y_])
-                            field = draw_ids_on_ships(field, [self.ships[j] for j in qset.ship_ids], nset_current)
+                            qubitsets.pop(fvalue)
+                            field = draw_ids_on_ships(field, [self.ships[k] for k in qset.ship_ids], nset_current)
                             nset_current += 1
-                            print(field)
-                            print(qubitsets)
+                            # print(field)
+                            # print(qubitsets)
 
             if new_set_idx == nset_current:
                 qset = QubitSet(idx=nset_current, ship_ids=[i])
                 qubitsets[nset_current] = qset
                 field = draw_ids_on_ships(field, [self.ships[i]], nset_current)
                 nset_current += 1
-                print(field)
-            print(qubitsets)
+            print(field)
 
+        return self.set_intersections(qubitsets)
+
+    def set_intersections(self, qubitsets):
         qubitsets_list = []
         for v in qubitsets.values():
             qubitsets_list.append(v)
         for i, qset in enumerate(qubitsets_list):
             qubitsets_list[i].idx = i
             qubitsets_list[i].nqubits = sum([self.ships[j].nqubits for j in qset.ship_ids])
+            for j in qset.ship_ids:
+                self.ships[j].q_set = i
+            for j, idx1 in enumerate(qset.ship_ids):
+                for idx2 in qset.ship_ids[j+1:]:
+                    qubitsets_list[i].intersection_ids += self.get_ship_intersections(idx1, idx2)
         return qubitsets_list
+
+    def get_ship_intersections(self, idx1, idx2):
+        qship1, qship2 = self.ships[idx1], self.ships[idx2]
+        result = []
+        for i, (x1, y1, hv1) in enumerate(qship1.coordinates):
+            for j, (x2, y2, hv2) in enumerate(qship2.coordinates):
+                fromx = x1 - 1 if x1 != 0 else 0
+                fromy = y1 - 1 if y1 != 0 else 0
+                tox = x1 + 2 if hv1 == 1 else x1 + 1 + qship1.shape
+                toy = y1 + 2 if hv1 == 0 else y1 + 1 + qship1.shape
+                x2end, y2end = x2 + (1 - hv2) * qship2.shape, y2 + hv2 * qship2.shape
+                if (fromx <= x2 < tox and fromy <= y2 < toy) or (fromx <= x2end < tox and fromy <= y2end < toy):
+                    result.append(((idx1, i), (idx2, j)))
+        return result
 
 
 def draw_ids_on_ships(field, ships, idx):
