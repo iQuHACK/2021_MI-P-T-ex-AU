@@ -1,2 +1,4 @@
 tk
 numpy
+re
+qiskit

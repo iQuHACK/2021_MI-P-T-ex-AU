@@ -1,5 +1,6 @@
 import numpy as np
 import qiskit
+import re
 from typing import List, Tuple
 
 from util import draw_ids_on_ships
@@ -11,11 +12,60 @@ class QuantumCircuits:
             self.backend = qiskit.BasicAer.get_backend('qasm_simulator')
        #write other types of backends
     
-    def create_psi(self, nqubits: int, intersection_ids: List[Tuple[Tuple[int, int], Tuple[int, int]]]):
-        #self.possible_psi <- List[str]
-        self.nqubits = nqubits
-        self.intersection_ids = intersection_ids
-        self.possible_psi = np.array(["010", "011", "101"])
+    def my_bin(self, el:int, n:int) -> str:
+        return "0"*(n -  len(bin(el)[2:])) + bin(el)[2:]
+
+    def create_psi(self, ships, qset) -> List[str]:
+        self.nqubits = qset.nqubits
+        self.intersection_ids = qset.intersection_ids
+        self.possible_psi = [self.my_bin(i,self.nqubits) for i in np.arange(2**self.nqubits)]
+
+        ships_nq = {}
+        ship_start_pos = {}
+        ships_n_re = {}
+        pos = 0
+        for ship in qset.ship_ids:
+            ships_nq[ship] = ships[ship].nqubits
+            ships_n_re = len(ships[ship].coordinates)
+            ship_start_pos[ship] = pos
+            pos += ships_nq[ship]
+            
+
+        for ship in qset.ship_ids:
+            for i in range(ships_n_re[ship], 2**ships_nq[ship] ):
+                pattern = re.compile(
+                    "[0,1]{%i}" % ship_start_pos[ship] + 
+                    self.my_bin(i, ships_nq[ship]) + 
+                    "[0,1]{%i}"%(qset.nqubits - ship_start_pos[ship] - ships_nq[ship] ) )
+                rm_elements = []
+                for psi in self.possible_psi:
+                    if re.match(pattern, psi):
+                        rm_elements.append(psi)
+                for el in rm_elements:
+                    self.possible_psi.remove(el)
+                                 
+        for intersection in qset.intersection_ids:
+            print(intersection)
+            if ship_start_pos[intersection[0][0]] < ship_start_pos[intersection[1][0]]:
+                id_0, q_id_0 = intersection[0]
+                id_1, q_id_1 = intersection[1]
+            else:
+                id_1, q_id_1 = intersection[0]
+                id_0, q_id_0 = intersection[1]
+            pattern = re.compile(
+                "[0,1]{%i}" % ship_start_pos[id_0] + 
+                self.my_bin(q_id_0, ships_nq[id_0]) + 
+                "[0,1]{%i}"%(ship_start_pos[id_1] - ships_nq[id_0] - ship_start_pos[id_0] ) +
+                self.my_bin(q_id_1, ships_nq[id_1]) + 
+                "[0,1]{%i}"%(qset.nqubits - ship_start_pos[id_1] - ships_nq[id_1] ))
+           
+        rm_elements = []
+        for psi in self.possible_psi:
+            if re.match(pattern, psi):
+                rm_elements.append(psi)
+
+        for el in rm_elements:
+            self.possible_psi.remove(el)
     
     def change_sign(self, var: str):
         for i, v_i in enumerate(var[::-1]):
