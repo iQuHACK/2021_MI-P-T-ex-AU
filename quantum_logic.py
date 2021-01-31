@@ -199,7 +199,6 @@ class QuantumGame:
             self.check_one_shoot(shoot_num, one_shoot_coordinate)
         for one_set in self.qsets:
             if len(one_set.current_shoots) != 0:
-                #print("make a qc")
                 qc = QuantumCircuits()
                 qc.create_psi(self.ships, one_set)
                 qc.create_qc()
@@ -211,9 +210,9 @@ class QuantumGame:
                     for ship_id in one_set.ship_ids:
                         ship = self.ships[ship_id]
                         x_ship, y_ship, d_ship = ship.coordinates[qc.ship_measure(ship_id)]
-                        if x_ship <= x_shoot <= x_ship + d_ship * (ship.shape -1) and \
+                        if x_ship <= x_shoot <= x_ship + d_ship * (ship.shape - 1) and \
                                 y_ship <= y_shoot <= y_ship + (1 - d_ship) * (ship.shape - 1):
-                            
+
                             self.ships[ship_id].damage[y_shoot - y_ship + x_shoot - x_ship] = 0
                             # probably some of us want to know which part of the ship was shot
                             ship.health = 1

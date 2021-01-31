@@ -52,7 +52,7 @@ class GameField:
         # TODO exit if cell is already shot
         if (x, y) in self.selected_cells:
             self.selected_cells.pop(self.selected_cells.index((x, y)))
-            self.controller.color_cell_guessing(x, y, 'white')
+            self.controller.color_cell_guessing(x, y, 'SystemButtonFace')
         else:
             if len(self.selected_cells) == self.cells_per_guess:
                 raise UserWarning("You don't have any cells left this guess")
@@ -94,22 +94,26 @@ class GameField:
         self.guesses += 1
         self.controller.change_guesses(self.guesses)
         print('Guess submitted')
+        for x, y in self.selected_cells:
+            self.controller.color_cell_guessing(x, y, 'SystemButtonFace')
 
         response = self.qgame.shoot_cells(self.selected_cells)
         print(response)
         for x, y, ship_id, health in response:
             if ship_id < 0:
-                self.controller.color_cell(x, y, self.miss_color)
+                self.controller.color_cell_guessing(x, y, self.miss_color)
             elif health == 1:
                 self.ships[ship_id].health = 1
-                self.controller.color_cell(x, y, self.injured_color)
+                self.controller.color_cell_guessing(x, y, self.injured_color)
             else:
                 if health != 0:
                     print(f'Error: Ship ID > 0, health = {health}')
                 self.ships[ship_id].health = 0
                 ship_coords_to_color = self._get_coords_to_color(x, y, ship_id)
                 for x_, y_ in ship_coords_to_color:
-                    self.controller.color_cell(x, y, self.killed_color)
+                    self.controller.color_cell_guessing(x_, y_, self.killed_color)
+        self.selected_cells = []
+        self.controller.change_cells_left(self.cells_per_guess)
 
     def _get_coords_to_color(self, x, y, ship_id):
         result = []
