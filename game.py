@@ -3,7 +3,7 @@ from quantum_logic import Battleship, QuantumGame
 
 class GameField:
     def __init__(self, draw_next_ship, color_cell, change_qubits_left, color_cell_guessing, init_guessing,
-                 field_size=10, qbits=11):
+                 field_size=10, qbits=11, default_shoots_number=5):
         self.field_size = field_size
         self.ships = []
         self.current_ship = []
@@ -15,6 +15,7 @@ class GameField:
         self.change_qubits_left = change_qubits_left
         self.color_cell_guessing = color_cell_guessing
         self.init_guessing = init_guessing
+        self.default_shoots_number = default_shoots_number
         self.qgame = None
         self.ship_num = 0
         self.max_qbits_per_ship = 3
@@ -43,7 +44,9 @@ class GameField:
 
     def cell_clicked_guessing(self, x, y):
         if self.qgame is None:
-            self.qgame = QuantumGame(self.ships)
+            self.qgame = QuantumGame(self.ships,
+                                     default_shoots_number=self.default_shoots_number,
+                                     field_size=self.field_size)
         print(x, y)
 
     # 0 - vertical, 1 - horizontal
