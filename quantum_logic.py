@@ -157,6 +157,7 @@ class QubitSet:
         self.ship_ids = ship_ids
         self.intersection_ids: List[Tuple[Tuple[int, int], Tuple[int, int]]] = \
             intersection_ids if intersection_ids is not None else []
+        self.current_shoots = []
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -188,6 +189,7 @@ class QuantumGame:
         return
 
     def shoot_cells(self, coordinates: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
+        self.qsets = self.qubit_sets_from_ships()
         shoots_res = []
         for shoot_num, one_shoot_coordinate in enumerate(coordinates):
             self.check_one_shoot(shoot_num, one_shoot_coordinate)
