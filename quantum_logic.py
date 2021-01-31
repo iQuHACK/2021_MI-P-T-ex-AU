@@ -134,7 +134,8 @@ class QuantumCircuits:
         self.measured = list(self.count.keys())[0]
 
     def ship_measure(self, ship_id):
-        if self.ships_nq[ship_id]  == 0:
+        assert ship_id in self.ships_nq
+        if self.ships_nq[ship_id] == 0:
             return 0
         else:
             sum_res = 0
@@ -186,8 +187,8 @@ class QuantumGame:
                 x_ship = variants[0]
                 y_ship = variants[1]
                 d_ship = variants[2]
-                if x_ship <= one_shoot_coordinate[0] <= x_ship + (1 - d_ship) * (ship.shape -1) and \
-                        y_ship <= one_shoot_coordinate[1] <= y_ship + d_ship * (ship.shape -1):
+                if x_ship <= one_shoot_coordinate[0] <= x_ship + (1 - d_ship) * (ship.shape - 1) and \
+                        y_ship <= one_shoot_coordinate[1] <= y_ship + d_ship * (ship.shape - 1):
                     self.qsets[ship.q_set].current_shoots.append(shoot_num)
                     return 1
         return 0
@@ -195,27 +196,32 @@ class QuantumGame:
     def shoot_cells(self, coordinates: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
         print("shoot coordinates:", coordinates)
         self.qsets = self.qubit_sets_from_ships()
-        #for qset in self.qsets:
+        # for qset in self.qsets:
         #    print(qset.ship_ids)
         shoots_res: List[List[int]] = []
         for shoot_num, one_shoot_coordinate in enumerate(coordinates):
             if not self.check_one_shoot(shoot_num, one_shoot_coordinate):
-                shoots_res.append([one_shoot_coordinate[0],one_shoot_coordinate[1], -1, -2])
+                shoots_res.append([one_shoot_coordinate[0], one_shoot_coordinate[1], -1, -2])
         for one_set in self.qsets:
             if len(one_set.current_shoots) != 0:
-                qc = QuantumCircuits()
-                qc.create_psi(self.ships, one_set)
-                qc.create_qc()
-                qc.run_qc()
+                qc = None
+                if one_set.nqubits > 0:
+                    qc = QuantumCircuits()
+                    qc.create_psi(self.ships, one_set)
+                    qc.create_qc()
+                    qc.run_qc()
 
                 for one_shoot_num in one_set.current_shoots:
                     x_shoot, y_shoot = coordinates[one_shoot_num]
                     shoots_res.append([x_shoot, y_shoot, -1, -1])
                     for ship_id in one_set.ship_ids:
                         ship = self.ships[ship_id]
-                        x_ship, y_ship, d_ship = ship.coordinates[qc.ship_measure(ship_id)]
-                        if x_ship <= x_shoot <= x_ship + d_ship * (ship.shape - 1) and \
-                                y_ship <= y_shoot <= y_ship + (1 - d_ship) * (ship.shape - 1):
+                        if one_set.nqubits > 0:
+                            x_ship, y_ship, d_ship = ship.coordinates[qc.ship_measure(ship_id)]
+                        else:
+                            x_ship, y_ship, d_ship = ship.coordinates[0]
+                        if x_ship <= x_shoot <= x_ship + (1 - d_ship) * (ship.shape - 1) and \
+                                y_ship <= y_shoot <= y_ship + d_ship * (ship.shape - 1):
 
                             self.ships[ship_id].damage[y_shoot - y_ship + x_shoot - x_ship] = 0
                             # probably some of us want to know which part of the ship was shot
@@ -226,14 +232,18 @@ class QuantumGame:
                             shoots_res[-1][2] = ship_id
                             shoots_res[-1][3] = ship.health
 
-                for ship_id, ship in enumerate(self.ships):
+                for ship_id in one_set.ship_ids:
+                    ship = self.ships[ship_id]
+                    #                for ship_id, ship in enumerate(self.ships):
                     if ship.health != 2:
-                        x_ship, y_ship, d_ship = ship.coordinates[qc.ship_measure(ship_id)]
+                        x_ship, y_ship, d_ship = ship.coordinates[qc.ship_measure(ship_id) if one_set.nqubits > 0 else 0]
                         ship.coordinates = [(x_ship, y_ship, d_ship)]
+                        print(ship.coordinates)
 
                 one_set.current_shoots = []
+
         shoots_res = [tuple(res) for res in shoots_res]
-        #print(shoots_res)
+        # print(shoots_res)
         return shoots_res
 
     def get_shoots_number(self):
@@ -249,8 +259,8 @@ class QuantumGame:
                 x, y, hv = shipcoords
                 fromx = x - 1 if x != 0 else 0
                 fromy = y - 1 if y != 0 else 0
-                tox = x + 2 if hv == 0 else x + 1 + qship.shape
-                toy = y + 2 if hv == 1 else y + 1 + qship.shape
+                tox = x + 2 if hv == 1 else x + 1 + qship.shape
+                toy = y + 2 if hv == 0 else y + 1 + qship.shape
 
                 tox = min(tox, self.field_size)
                 toy = min(toy, self.field_size)
@@ -295,9 +305,9 @@ class QuantumGame:
             for j, (x2, y2, hv2) in enumerate(qship2.coordinates):
                 fromx = x1 - 1 if x1 != 0 else 0
                 fromy = y1 - 1 if y1 != 0 else 0
-                tox = x1 + 2 if hv1 == 0 else x1 + 1 + qship1.shape
-                toy = y1 + 2 if hv1 == 1 else y1 + 1 + qship1.shape
-                x2end, y2end = x2 + hv2 * (qship2.shape - 1), y2 + (1 - hv2) * (qship2.shape - 1)
+                tox = x1 + 2 if hv1 == 1 else x1 + 1 + qship1.shape
+                toy = y1 + 2 if hv1 == 0 else y1 + 1 + qship1.shape
+                x2end, y2end = x2 + (1 - hv2) * (qship2.shape - 1), y2 + hv2 * (qship2.shape - 1)
                 if (fromx <= x2 < tox and fromy <= y2 < toy) or (fromx <= x2end < tox and fromy <= y2end < toy):
                     result.append(((idx1, i), (idx2, j)))
         return result
