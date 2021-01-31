@@ -10,6 +10,11 @@ class QuantumCircuits:
     def __init__(self, qc_type='qasm_simulator'):
         if qc_type == 'qasm_simulator':
             self.backend = qiskit.BasicAer.get_backend('qasm_simulator')
+        elif qc_type == "ionq_simulator":
+            with open("topsecret.txt", "r") as f:
+                token = f.readline().strip()
+            provider = IonQProvider(token = token)
+            self.backend = provider.get_backend("ionq_simulator")
 
     # write other types of backends
 
@@ -126,6 +131,7 @@ class QuantumCircuits:
 
         self.recursion_qubit("", self.possible_psi)
         self.qc.measure(self.q_reg, self.c_reg)
+        self.qc = qiskit.compiler.transpile(qc, backend=self.backend)
 
     def run_qc(self, shots=1):
         job = qiskit.execute(self.qc, self.backend, shots=shots)  # , seed_simulator = 3
