@@ -20,23 +20,23 @@ class QuantumCircuits:
         self.intersection_ids = qset.intersection_ids
         self.possible_psi = [self.my_bin(i,self.nqubits) for i in np.arange(2**self.nqubits)]
 
-        ships_nq = {}
-        ship_start_pos = {}
-        ships_n_re = {}
+        self.ships_nq = {}
+        self.ship_start_pos = {}
+        self.ships_n_re = {}
         pos = 0
         for ship in qset.ship_ids:
-            ships_nq[ship] = ships[ship].nqubits
-            ships_n_re = len(ships[ship].coordinates)
-            ship_start_pos[ship] = pos
+            self.ships_nq[ship] = ships[ship].nqubits
+            self.ships_n_re = len(ships[ship].coordinates)
+            self.ship_start_pos[ship] = pos
             pos += ships_nq[ship]
             
 
         for ship in qset.ship_ids:
-            for i in range(ships_n_re[ship], 2**ships_nq[ship] ):
+            for i in range(self.ships_n_re[ship], 2**self.ships_nq[ship] ):
                 pattern = re.compile(
-                    "[0,1]{%i}" % ship_start_pos[ship] + 
-                    self.my_bin(i, ships_nq[ship]) + 
-                    "[0,1]{%i}"%(qset.nqubits - ship_start_pos[ship] - ships_nq[ship] ) )
+                    "[0,1]{%i}" % self.ship_start_pos[ship] + 
+                    self.my_bin(i, self.ships_nq[ship]) + 
+                    "[0,1]{%i}"%(qset.nqubits - self.ship_start_pos[ship] - self.ships_nq[ship] ) )
                 rm_elements = []
                 for psi in self.possible_psi:
                     if re.match(pattern, psi):
@@ -46,18 +46,18 @@ class QuantumCircuits:
                                  
         for intersection in qset.intersection_ids:
             print(intersection)
-            if ship_start_pos[intersection[0][0]] < ship_start_pos[intersection[1][0]]:
+            if self.ship_start_pos[intersection[0][0]] < self.ship_start_pos[intersection[1][0]]:
                 id_0, q_id_0 = intersection[0]
                 id_1, q_id_1 = intersection[1]
             else:
                 id_1, q_id_1 = intersection[0]
                 id_0, q_id_0 = intersection[1]
             pattern = re.compile(
-                "[0,1]{%i}" % ship_start_pos[id_0] + 
-                self.my_bin(q_id_0, ships_nq[id_0]) + 
-                "[0,1]{%i}"%(ship_start_pos[id_1] - ships_nq[id_0] - ship_start_pos[id_0] ) +
-                self.my_bin(q_id_1, ships_nq[id_1]) + 
-                "[0,1]{%i}"%(qset.nqubits - ship_start_pos[id_1] - ships_nq[id_1] ))
+                "[0,1]{%i}" % self.ship_start_pos[id_0] + 
+                self.my_bin(q_id_0, self.ships_nq[id_0]) + 
+                "[0,1]{%i}"%(self.ship_start_pos[id_1] - self.ships_nq[id_0] - self.ship_start_pos[id_0] ) +
+                self.my_bin(q_id_1, self.ships_nq[id_1]) + 
+                "[0,1]{%i}"%(qset.nqubits - self.ship_start_pos[id_1] - self.ships_nq[id_1] ))
            
         rm_elements = []
         for psi in self.possible_psi:
@@ -105,11 +105,18 @@ class QuantumCircuits:
         self.recursion_qubit("", self.possible_psi)
         self.qc.measure(self.q_reg , self.c_reg)
                    
-    def run_qc(self):
-        job = qiskit.execute(self.qc, self.backend, shots=10000) #, seed_simulator = 3
+    def run_qc(self, shots = 1):
+        job = qiskit.execute(self.qc, self.backend, shots=shots) #, seed_simulator = 3
         result = job.result()
         self.count = result.get_counts()
+        self.measured = list(self.count.keys())[0]
 
+    def ship_measure(self, ship_id):
+        sum_res = 0
+        val = self.measured[self.ship_start_pos[ship_id] : self.ship_start_pos[ship_id] + self.ships_nq[ship_id]]
+        for i, v in enumerate(va[::-1]):
+            sum_res += 2**i * int(v)
+        return sum_res
 
 class Battleship:
     def __init__(self, shape: int, coordinates: List[Tuple[int, int, int]]):
@@ -145,8 +152,52 @@ class QuantumGame:
         self.default_shoots_number = default_shoots_number
         self.field_size = field_size
 
+    def check_one_shoot(self, shoot_num: int, one_shoot_coordinate: Tuple[int, int]): 
+        for ship in self.ships:
+                for variants in ship.coordinates:
+                    x_ship = variants[0]
+                    y_ship = variants[1]
+                    d_ship = variants[2]
+                    if x_ship <= one_shoot_coordinate[0] < x_ship + (1 - d_ship) * ship.shape and \
+                       y_ship <= one_shoot_coordinate[1] < y_ship + d_ship * ship.shape:
+                        self.qsets[ship.q_set].current_shoots.append(shoot_num)
+                        return 
+        return
+
     def shoot_cells(self, coordinates: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
-        pass
+        shoots_res = []
+        for shoot_num, one_shoot_coordinate in enumerate(coordinates):
+            self.check_one_shoot(shoot_num, one_shoot_coordinate)
+        for one_set in self.qsets:
+            if len(one_set.current_shoots) != 0:
+                qc = QuantumCircuits()
+                qc.create_psi(self.ships, one_set)
+                qc.create_qc()
+                qc.run_qc()
+
+                
+                for one_shoot_num in one_set.current_shoots:
+                    x_shoot, y_shoot = coordinates[one_shoot_num]
+                    shoots_res.append(x_shoot, y_shoot, -1, 2)
+                    for ship_id in one_set.ship_ids:
+                        ship = self.ships[ship_id]
+                        x_ship, y_ship, d_ship = ship.coordinates[qc.ship_measure(ship_id)]
+                        if x_ship <= x_shoot < x_ship + (1 - d_ship) * ship.shape and \
+                           y_ship <= y_shoot < y_ship + d_ship * ship.shape:
+                               #probably some of us want to know which part of the ship was shot
+                               ship.flag = 1
+                               #check is ship dead
+                               shoots_res[-1][2] = ship_id
+                               shoots_res[-1][3] = ship.flag
+
+                for ship in self.ships:
+                    if ship.flag != 2:
+                        x_ship, y_ship, d_ship = ship.coordinates[qc.ship_measure(ship_id)]
+                        ship.coordinates = [(x_ship, y_ship, d_ship)]  
+                
+                one_set.current_shoots = []
+
+        return lucky_shoots
 
     def get_shoots_number(self):
         return self.default_shoots_number
