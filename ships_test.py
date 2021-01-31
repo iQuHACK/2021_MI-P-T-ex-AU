@@ -7,7 +7,7 @@ DEFSHOOTS = 5
 
 
 def main():
-    f = open("ships2.txt", 'r')
+    f = open("ships.txt", 'r')
     line = f.readline()
     shoots, size = line.split(' ')
     lines = f.readline()
@@ -27,10 +27,12 @@ def main():
     f.close()
     game = QuantumGame(ships, int(shoots), int(size))
     result = game.qubit_sets_from_ships()
+    print()
     print(lines)
     for i in result:
         print(i.ship_ids, i.intersection_ids)
     test_simple_case()
+    test_big_field()
 
 
 # [[   0 -100 -100 -100 -100 -100]
@@ -74,7 +76,17 @@ def test_simple_case():
 # [(2, 8, 0), (4, 6, 0)] 2
 # [(1, 5, 0), (8, 6, 1)] 2
 def test_big_field():
-    pass
+    ships = [
+        Battleship(shape=3, coordinates=[(1, 1, VERT), (5, 4, VERT)]),
+        Battleship(shape=1, coordinates=[(6, 8, VERT)]),
+        Battleship(shape=4, coordinates=[(5, 1, HORIZ)]),
+        Battleship(shape=1, coordinates=[(8, 7, HORIZ)]),
+        Battleship(shape=1, coordinates=[(2, 8, HORIZ), (4, 6, HORIZ)]),
+        Battleship(shape=1, coordinates=[(1, 5, HORIZ), (8, 6, VERT)]),
+    ]
+    qgame = QuantumGame(ships=ships, field_size=10, default_shoots_number=DEFSHOOTS)
+    result = qgame.qubit_sets_from_ships()
+    result = sorted(result, key=lambda x: sorted(x.ship_ids))
 
 
 if __name__ == '__main__':
