@@ -186,8 +186,8 @@ class QuantumGame:
                 if x_ship <= one_shoot_coordinate[0] <= x_ship + (1 - d_ship) * (ship.shape -1) and \
                         y_ship <= one_shoot_coordinate[1] <= y_ship + d_ship * (ship.shape -1):
                     self.qsets[ship.q_set].current_shoots.append(shoot_num)
-                    return
-        return
+                    return 1
+        return 0
 
     def shoot_cells(self, coordinates: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
         print("shoot coordinates:", coordinates)
@@ -196,7 +196,8 @@ class QuantumGame:
         #    print(qset.ship_ids)
         shoots_res: List[List[int]] = []
         for shoot_num, one_shoot_coordinate in enumerate(coordinates):
-            self.check_one_shoot(shoot_num, one_shoot_coordinate)
+            if not self.check_one_shoot(shoot_num, one_shoot_coordinate):
+                shoots_res.append([one_shoot_coordinate[0],one_shoot_coordinate[1], -1, -2])
         for one_set in self.qsets:
             if len(one_set.current_shoots) != 0:
                 qc = QuantumCircuits()
@@ -206,7 +207,7 @@ class QuantumGame:
 
                 for one_shoot_num in one_set.current_shoots:
                     x_shoot, y_shoot = coordinates[one_shoot_num]
-                    shoots_res.append([x_shoot, y_shoot, -1, 2])
+                    shoots_res.append([x_shoot, y_shoot, -1, -1])
                     for ship_id in one_set.ship_ids:
                         ship = self.ships[ship_id]
                         x_ship, y_ship, d_ship = ship.coordinates[qc.ship_measure(ship_id)]
