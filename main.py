@@ -1,4 +1,5 @@
 from tkinter import *
+from tkinter import messagebox
 from tkinter.messagebox import showerror
 from tkinter.ttk import *
 import math
@@ -64,6 +65,9 @@ class Controller:
     def init_guessing():
         init_guessing_field()
 
+    @staticmethod
+    def end_game(guesses):
+        messagebox.showinfo(title='Congratulations!', message='You destroyed all ships in ' + str(guesses) + ' guesses')
 
 def cell_clicked(x, y, o):
     try:
@@ -95,6 +99,7 @@ def next_ship_clicked(event=None):
 master = Tk()
 master.title('QBattleship')
 master.resizable(False, False)
+print(master['background'])
 
 field = Canvas(master, width=FIELD_SIZE, height=FIELD_SIZE, highlightthickness=FIELD_HIGHLIGHT,
                highlightbackground='black')

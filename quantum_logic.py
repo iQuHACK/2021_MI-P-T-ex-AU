@@ -2,6 +2,7 @@ import numpy as np
 import qiskit
 import re
 from typing import List, Tuple
+from qiskit_ionq_provider import IonQProvider
 
 from util import draw_ids_on_ships
 
@@ -131,7 +132,7 @@ class QuantumCircuits:
 
         self.recursion_qubit("", self.possible_psi)
         self.qc.measure(self.q_reg, self.c_reg)
-        self.qc = qiskit.compiler.transpile(qc, backend=self.backend)
+        self.qc = qiskit.compiler.transpile(self.qc, backend=self.backend)
 
     def run_qc(self, shots=1):
         job = qiskit.execute(self.qc, self.backend, shots=shots)  # , seed_simulator = 3

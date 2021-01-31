@@ -21,6 +21,7 @@ class GameField:
         self.ship_sizes = (4, 3, 2, 1, 1)
         self.ship_colors = ('#E43F6F', '#93E1D8', '#1C7C54', '#E9806E', '#EEFC57',
                             "#2660a4", "#c47335", "#eff0d1", "#77ba99", "#56351e")
+        self.ships_killed = 0
         self.miss_color = '#8fcefd'
         self.injured_color = '#ec3520'
         self.killed_color = '#3a0a04'
@@ -112,6 +113,9 @@ class GameField:
                 ship_coords_to_color = self._get_coords_to_color(x, y, ship_id)
                 for x_, y_ in ship_coords_to_color:
                     self.controller.color_cell_guessing(x_, y_, self.killed_color)
+                self.ships_killed += 1
+                if self.ships_killed == len(self.ship_sizes):
+                    self.controller.end_game(self.guesses)
         self.selected_cells = []
         self.controller.change_cells_left(self.cells_per_guess)
 
