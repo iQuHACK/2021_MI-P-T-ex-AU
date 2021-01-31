@@ -7,18 +7,19 @@ from util import draw_ids_on_ships
 
 
 class QuantumCircuits:
-    def __init__(self, qc_type = 'qasm_simulator'):
+    def __init__(self, qc_type='qasm_simulator'):
         if qc_type == 'qasm_simulator':
             self.backend = qiskit.BasicAer.get_backend('qasm_simulator')
-       #write other types of backends
-    
-    def my_bin(self, el:int, n:int) -> str:
-        return "0"*(n -  len(bin(el)[2:])) + bin(el)[2:]
 
-    def create_psi(self, ships, qset) -> List[str]:
+    # write other types of backends
+
+    def my_bin(self, el: int, n: int) -> str:
+        return "0" * (n - len(bin(el)[2:])) + bin(el)[2:]
+
+    def create_psi(self, ships, qset):
         self.nqubits = qset.nqubits
         self.intersection_ids = qset.intersection_ids
-        self.possible_psi = [self.my_bin(i,self.nqubits) for i in np.arange(2**self.nqubits)]
+        self.possible_psi = [self.my_bin(i, self.nqubits) for i in np.arange(2 ** self.nqubits)]
 
         self.ships_nq = {}
         self.ship_start_pos = {}
@@ -29,23 +30,22 @@ class QuantumCircuits:
             self.ships_n_re[ship] = len(ships[ship].coordinates)
             self.ship_start_pos[ship] = pos
             pos += self.ships_nq[ship]
-            
 
         for ship in qset.ship_ids:
-            for i in range(self.ships_n_re[ship], 2**self.ships_nq[ship] ):
+            for i in range(self.ships_n_re[ship], 2 ** self.ships_nq[ship]):
                 pattern = re.compile(
-                    "[0,1]{%i}" % self.ship_start_pos[ship] + 
-                    self.my_bin(i, self.ships_nq[ship]) + 
-                    "[0,1]{%i}"%(qset.nqubits - self.ship_start_pos[ship] - self.ships_nq[ship] ) )
+                    "[0,1]{%i}" % self.ship_start_pos[ship] +
+                    self.my_bin(i, self.ships_nq[ship]) +
+                    "[0,1]{%i}" % (qset.nqubits - self.ship_start_pos[ship] - self.ships_nq[ship]))
                 rm_elements = []
                 for psi in self.possible_psi:
                     if re.match(pattern, psi):
                         rm_elements.append(psi)
                 for el in rm_elements:
                     self.possible_psi.remove(el)
-                                 
+
         for intersection in qset.intersection_ids:
-            #print(intersection)
+            # print(intersection)
             if self.ships_nq[intersection[0][0]] * self.ships_nq[intersection[1][0]] != 0:
                 if self.ship_start_pos[intersection[0][0]] < self.ship_start_pos[intersection[1][0]]:
                     id_0, q_id_0 = intersection[0]
@@ -54,13 +54,13 @@ class QuantumCircuits:
                     id_1, q_id_1 = intersection[0]
                     id_0, q_id_0 = intersection[1]
                 pattern = re.compile(
-                    "[0,1]{%i}" % self.ship_start_pos[id_0] + 
-                    self.my_bin(q_id_0, self.ships_nq[id_0]) + 
-                    "[0,1]{%i}"%(self.ship_start_pos[id_1] - self.ships_nq[id_0] - self.ship_start_pos[id_0] ) +
-                    self.my_bin(q_id_1, self.ships_nq[id_1]) + 
-                    "[0,1]{%i}"%(qset.nqubits - self.ship_start_pos[id_1] - self.ships_nq[id_1] ))
+                    "[0,1]{%i}" % self.ship_start_pos[id_0] +
+                    self.my_bin(q_id_0, self.ships_nq[id_0]) +
+                    "[0,1]{%i}" % (self.ship_start_pos[id_1] - self.ships_nq[id_0] - self.ship_start_pos[id_0]) +
+                    self.my_bin(q_id_1, self.ships_nq[id_1]) +
+                    "[0,1]{%i}" % (qset.nqubits - self.ship_start_pos[id_1] - self.ships_nq[id_1]))
                 rm_elements = []
-                #print(pattern)
+                # print(pattern)
                 for psi in self.possible_psi:
                     if re.match(pattern, psi):
                         rm_elements.append(psi)
@@ -73,10 +73,10 @@ class QuantumCircuits:
                 else:
                     id_0, q_id_0 = intersection[1]
                 pattern = re.compile(
-                    "[0,1]{%i}" % self.ship_start_pos[id_0] + 
-                    self.my_bin(q_id_0, self.ships_nq[id_0]) + 
-                    "[0,1]{%i}"%(qset.nqubits - self.ship_start_pos[id_0] - self.ships_nq[id_0] ) )
-                #print(pattern)
+                    "[0,1]{%i}" % self.ship_start_pos[id_0] +
+                    self.my_bin(q_id_0, self.ships_nq[id_0]) +
+                    "[0,1]{%i}" % (qset.nqubits - self.ship_start_pos[id_0] - self.ships_nq[id_0]))
+                # print(pattern)
                 rm_elements = []
                 for psi in self.possible_psi:
                     if re.match(pattern, psi):
@@ -86,14 +86,14 @@ class QuantumCircuits:
             else:
                 raise UserWarning("Two determenistic ship have an intersection")
 
-        if len(self.possible_psi == 0):
+        if len(self.possible_psi) == 0:
             raise UserWarning("This state is imposible even in quantum world =(")
 
     def change_sign(self, var: str):
         for i, v_i in enumerate(var[::-1]):
             if v_i == "0":
                 self.qc.x(self.q_reg[i])
-                   
+
     def recursion_qubit(self, path: str, possible_psi: List[str]):
         last = [i[-1] for i in possible_psi[:]]
         if "1" in last and "0" in last:
@@ -111,33 +111,33 @@ class QuantumCircuits:
             else:
                 self.change_sign(path)
                 self.qc.mct(self.q_reg[:len(path)], self.q_reg[len(path)])
-                self.change_sign(path) 
-                   
+                self.change_sign(path)
+
         for val in np.unique(last):
             if len(possible_psi[0]) > 1:
-                new_psi = [s[:-1] for s in possible_psi if s[-1]==val]
+                new_psi = [s[:-1] for s in possible_psi if s[-1] == val]
                 self.recursion_qubit(val + path, new_psi)
-                   
+
     def create_qc(self):
         self.q_reg = qiskit.QuantumRegister(self.nqubits)
         self.aux_reg = qiskit.QuantumRegister(1, "aux")
         self.c_reg = qiskit.ClassicalRegister(self.nqubits)
         self.qc = qiskit.QuantumCircuit(self.q_reg, self.aux_reg, self.c_reg)
-                   
+
         self.recursion_qubit("", self.possible_psi)
-        self.qc.measure(self.q_reg , self.c_reg)
-                   
-    def run_qc(self, shots = 1):
-        job = qiskit.execute(self.qc, self.backend, shots=shots) #, seed_simulator = 3
+        self.qc.measure(self.q_reg, self.c_reg)
+
+    def run_qc(self, shots=1):
+        job = qiskit.execute(self.qc, self.backend, shots=shots)  # , seed_simulator = 3
         result = job.result()
         self.count = result.get_counts()
         self.measured = list(self.count.keys())[0]
 
     def ship_measure(self, ship_id):
         sum_res = 0
-        val = self.measured[self.ship_start_pos[ship_id] : self.ship_start_pos[ship_id] + self.ships_nq[ship_id]]
+        val = self.measured[self.ship_start_pos[ship_id]: self.ship_start_pos[ship_id] + self.ships_nq[ship_id]]
         for i, v in enumerate(val[::-1]):
-            sum_res += 2**i * int(v)
+            sum_res += 2 ** i * int(v)
         return sum_res
 
 
@@ -178,14 +178,14 @@ class QuantumGame:
 
     def check_one_shoot(self, shoot_num: int, one_shoot_coordinate: Tuple[int, int, int, int]):
         for ship in self.ships:
-                for variants in ship.coordinates:
-                    x_ship = variants[0]
-                    y_ship = variants[1]
-                    d_ship = variants[2]
-                    if x_ship <= one_shoot_coordinate[0] < x_ship + (d_ship) * ship.shape and \
-                       y_ship <= one_shoot_coordinate[1] < y_ship + (1 - d_ship) * ship.shape:
-                        self.qsets[ship.q_set].current_shoots.append(shoot_num)
-                        return 
+            for variants in ship.coordinates:
+                x_ship = variants[0]
+                y_ship = variants[1]
+                d_ship = variants[2]
+                if x_ship <= one_shoot_coordinate[0] < x_ship + d_ship * ship.shape and \
+                        y_ship <= one_shoot_coordinate[1] < y_ship + (1 - d_ship) * ship.shape:
+                    self.qsets[ship.q_set].current_shoots.append(shoot_num)
+                    return
         return
 
     def shoot_cells(self, coordinates: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
@@ -209,21 +209,21 @@ class QuantumGame:
                         ship = self.ships[ship_id]
                         x_ship, y_ship, d_ship = ship.coordinates[qc.ship_measure(ship_id)]
                         if x_ship <= x_shoot < x_ship + (1 - d_ship) * ship.shape and \
-                           y_ship <= y_shoot < y_ship + d_ship * ship.shape:
-                                self.ships[ship_id].damage[y_shoot - y_ship + x_shoot - x_ship] = 0
-                                #probably some of us want to know which part of the ship was shot
-                                ship.flag = 1
-                                if sum(self.ships[ship_id].damage) == 0:
-                                    ship.flag = 0
-                                #check is ship dead
-                                shoots_res[-1][2] = ship_id
-                                shoots_res[-1][3] = ship.flag
+                                y_ship <= y_shoot < y_ship + d_ship * ship.shape:
+                            self.ships[ship_id].damage[y_shoot - y_ship + x_shoot - x_ship] = 0
+                            # probably some of us want to know which part of the ship was shot
+                            ship.flag = 1
+                            if sum(self.ships[ship_id].damage) == 0:
+                                ship.flag = 0
+                            # check is ship dead
+                            shoots_res[-1][2] = ship_id
+                            shoots_res[-1][3] = ship.flag
 
                 for ship_id, ship in enumerate(self.ships):
                     if ship.flag != 2:
                         x_ship, y_ship, d_ship = ship.coordinates[qc.ship_measure(ship_id)]
-                        ship.coordinates = [(x_ship, y_ship, d_ship)]  
-                
+                        ship.coordinates = [(x_ship, y_ship, d_ship)]
+
                 one_set.current_shoots = []
 
         return shoots_res
@@ -234,7 +234,7 @@ class QuantumGame:
     def qubit_sets_from_ships(self) -> List[QubitSet]:
         qubitsets = {}
         nset_current = 0
-        field = -100 * np.ones(shape=(self.field_size+2, self.field_size+2)).astype(int)
+        field = -100 * np.ones(shape=(self.field_size + 2, self.field_size + 2)).astype(int)
         for i, qship in enumerate(self.ships):
             new_set_idx = nset_current
             for j, shipcoords in enumerate(qship.coordinates):
@@ -273,7 +273,7 @@ class QuantumGame:
             for j in qset.ship_ids:
                 self.ships[j].q_set = i
             for j, idx1 in enumerate(qset.ship_ids):
-                for idx2 in qset.ship_ids[j+1:]:
+                for idx2 in qset.ship_ids[j + 1:]:
                     qubitsets_list[i].intersection_ids += self._get_ship_intersections(idx1, idx2)
         return qubitsets_list
 
